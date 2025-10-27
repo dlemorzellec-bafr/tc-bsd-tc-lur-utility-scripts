@@ -1,4 +1,9 @@
 #!/bin/bash
+# SPDX-License-Identifier: 0BSD
+# Dylan Erwan Le Morzellec (BECKHOFF Automation France SARL)
+# The script is provided AS IS and its behaviour is not guaranteed
+
+# Script to set up the TF1200-Sway graphical interface and HMI Client and custom configuration
 
 set -eu -o pipefail
 
