@@ -1,6 +1,11 @@
 #!/bin/bash
 # SPDX-License-Identifier: 0BSD
 
+# Dylan Erwan Le Morzellec (BECKHOFF Automation France SARL)
+# The script is provided AS IS and its behaviour is not guaranteed
+
+# Script to set up repositories, TwinCAT XAR runtime and some French accessibility for Beckhoff CX82xx and CX9240 IPCs
+
 set -eu -o pipefail
 
 # Logging script return
