@@ -67,7 +67,7 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
 ### TwinCAT/LUR
 
  - [x] Configuration de l'IPC Beckhoff (authentification pour apt, installation de TwinCAT XAR, clavier en français, heure de Paris)
- - [x] Script d'installation et de configuration pour TF1200 and Sway
+ - [x] Script d'installation et de configuration pour TF1200 et Sway
 	 - [ ] Seuls
 	 - [x] Avec TF2000 TwinCAT HMI 1.14
 	 - [x] Avec TF1810 PLC HMI Web
