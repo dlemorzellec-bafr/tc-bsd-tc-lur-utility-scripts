@@ -1,4 +1,11 @@
 #!/bin/sh
+# SPDX-License-Identifier: 0BSD
+# Dylan Erwan Le Morzellec (BECKHOFF Automation France SARL)
+# The script is provided AS IS and its behaviour is not warranted
+
+# Script to set up the TF1200-Sway graphical interface and HMI Client and custom configuration with TwinCAT HMI Server (1.14)
+
+# Constants
 readonly graph_user="tf1200-user"
 readonly user_path="/home/${graph_user}"
 readonly tf1200_path="/usr/local/etc/TwinCAT/Functions/TF1200-UI-Client"
@@ -13,7 +20,7 @@ echo ""
 echo "SCRIPT D'INSTALLATION ET DE CONFIGURATION DE LA TF1200 (BAFR)"
 echo ""
 
-# Le script doit etre execute en tant que root
+# Ensure script is run as root
 if [ "$(id -u)" -ne 0 ]; then
 	echo ""
 	echo "Le script doit etre execute en tant que root."
@@ -21,7 +28,7 @@ if [ "$(id -u)" -ne 0 ]; then
 	exit 1
 fi
 
-# Un mot de passe doit etre fourni (meme si "1")
+# A password must be given (even if "1")
 if [ -z "$1" ]; then
 	echo ""
 	echo "Un argument supplementaire est necessaire a l'execution du script : Mot de passe pour TwinCAT HMI et TF1200."
@@ -30,7 +37,7 @@ if [ -z "$1" ]; then
 fi
 password="$1"
 
-# Creation d'un point de restauration en amont
+# Creation of a restore point before doing any change
 echo ""
 echo "Creation du point de restauration 'BAFR_before_TF1200' ..."
 echo ""
@@ -49,7 +56,7 @@ else
 fi
 rm -f ${script_path}/tmp_rplist.txt
 
-# Creation de l'utilisateur graphique
+# Creation of the graphical user
 echo ""
 echo "Creation de l'utilisateur graphique..."
 echo ""
@@ -62,20 +69,20 @@ else
 	exit 1
 fi
 
-# Passage du layout du clavier en francais AZERTY
+# Configure keyboard layout to AZERTY default (French)
 echo ""
 echo "Forcage du clavier console en francais standard (si ce n'est deja fait)..."
 echo ""
 sysrc keymap="fr.kbd"
 
-# Une mise a jour de la derniere version de pkg est souvent necessaire
+# An upgrade of the pkg package manager is often necessary at this point
 echo ""
 echo "Mise a jour des depots et de pkg..."
 echo ""
 pkg update -f
 pkg install -y pkg
 
-# Installation de paquets supplementaires (Connexion Internet requise)
+# Install needed packages
 echo ""
 echo "Installation de paquets logiciels necessaires..."
 echo ""
@@ -92,20 +99,20 @@ for PACKAGE in $PACKAGES; do
 	pkg install -y $PACKAGE
 done
 
-# Initialisation du serveur TwinCAT HMI
+# Initialisation of TwinCAT HMI server
 echo ""
 echo "Initialisation du serveur TwinCAT HMI..."
 echo ""
 TcHmiSrv --initialize --password="${password}"
 
-# Activation de dbus
+# Activate dbus
 echo ""
 echo "Activation de dbus..."
 echo ""
 sysrc dbus_enable="YES"
 service dbus start
 
-# Creation des dossiers de configuration
+# Creation of configuration folders for tf1200-user
 echo ""
 echo "Creation des dossiers de configuration..."
 echo ""
@@ -116,18 +123,18 @@ chown -R ${graph_user} ${user_path}/.config
 chown -R ${graph_user} ${user_path}/.config/sway
 chown -R ${graph_user} ${user_path}/.config/TF1200-UI-Client
 
-# Installation de Sway et de Wayland (Script BADE)
+# Using Beckhoff BADE script to set up Sway and Wayland
 echo ""
 echo "Installation de Sway et de Wayland..."
 echo ""
 ${tf1200_srcpath}/setup-sway.sh --user=${graph_user}
 
-# Generation de la configuration de Sway
+# Generate Sway configuration file
 echo ""
 echo "Configuration de Sway..."
 echo ""
 touch ${sway_userconfig}/config
-cat >> "${sway_userconfig}/config" << EOF
+cat > "${sway_userconfig}/config" << EOF
 # Configuration de Sway (BAFR, DELM, 2025-05-06)
 
 ### EDIT BAFR : Support for XWayland
@@ -243,8 +250,6 @@ input * xkb_layout "fr"
 # Execute the TwinCAT UI Client with the specified arguments. #	EDIT BAFR Force debug logging
 #exec "$(cd "$(dirname "${script_path}")" && pwd)/TF1200-UI-Client" \$@
 exec "/usr/local/etc/TwinCAT/Functions/TF1200-UI-Client/TF1200-UI-Client" --user=${graph_user} > ${tf1200_userconfig}/tf1200-out.log 2> ${tf1200_userconfig}/tf1200-err.log
-# Fix echec TF1200 BAFR
-#exec firefox -url https://127.0.0.1:1020 --kiosk
 
 ### Key bindings
 #
@@ -259,7 +264,7 @@ exec "/usr/local/etc/TwinCAT/Functions/TF1200-UI-Client/TF1200-UI-Client" --user
 	# Start your launcher
 	bindsym \$mod+d exec \$menu
 	
-	# Start Beckhoff TF1200 HMI UI Client
+	# Start Beckhoff TF1200 HMI UI Client (BAFR)
 	bindsym \$mod+Alt+k exec /usr/local/etc/TwinCAT/Functions/TF1200-UI-Client/TF1200-UI-Client
 
 	# Drag floating windows by holding down \$mod and left mouse button.
@@ -422,12 +427,12 @@ include /usr/local/etc/sway/config.d/*
 EOF
 chown -R ${graph_user} ${sway_userconfig}/config
 
-# Generation de la configuration du client HMI TF1200-UI-Client
+# Generate TF1200 UI Client configuration
 echo ""
 echo "Configuration de la fonction TF1200..."
 echo ""
 touch ${tf1200_userconfig}/config.json
-cat >> "${tf1200_userconfig}/config.json" << EOF
+cat > "${tf1200_userconfig}/config.json" << EOF
 {
     "allowMove": true,
     "allowResize": true,
@@ -491,7 +496,7 @@ cat >> "${tf1200_userconfig}/config.json" << EOF
 EOF
 chown -R ${graph_user} ${tf1200_userconfig}/config.json
 
-# Configuration du demarrage automatique de Sway (Force debug logging !)
+# Set up automatic Sway execution with debug logging in user config folder
 echo ""
 echo "Configuration du demarrage automatique de Sway..."
 echo ""
@@ -506,13 +511,13 @@ EOF
 fi
 chown -R ${graph_user} ${shrc_path}
 
-# Configuration de l'auto log-in
+# Auto log-in configuration
 echo ""
 echo "Configuration de l'auto log-in..."
 echo ""
 ${tf1200_srcpath}/setup-autologin.sh --user=${graph_user}
 
-# Creation d'un point de restauration en aval
+# Creation of a restore point after the changes
 echo ""
 echo "Creation du point de restauration 'BAFR_after_TF1200' ..."
 echo ""

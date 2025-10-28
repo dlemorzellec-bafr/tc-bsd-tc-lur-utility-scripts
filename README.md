@@ -24,7 +24,7 @@ It is assumed for each script to be executed in `/home/Administrator` :
 	- [x] With TF2000 TwinCAT HMI 1.14
 	- [x] With TF1810 PLC HMI Web 
 - [x] TF6250 Modbus/TCP Installation and configuration script
-- [ ] ... Possibly more to come 
+- [ ] ... Possibly more to come (including offline versions)
 ### TwinCAT/LUR
 
  - [x] Beckhoff IPC configuration (with apt authentication and TwinCAT XAR installation)
@@ -35,7 +35,7 @@ It is assumed for each script to be executed in `/home/Administrator` :
 - [x] TF6250 Modbus/TCP Installation and configuration script
 - [x] Static IP Setter script
 - [ ] Docker installation script with TwinCAT XAR container deployment 
-- [ ] ... Possibly more to come
+- [ ] ... Possibly more to come (including offline versions)
 
 These are not official Beckhoff material.
 

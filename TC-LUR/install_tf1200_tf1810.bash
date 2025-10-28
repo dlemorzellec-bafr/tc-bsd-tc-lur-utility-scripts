@@ -1,9 +1,9 @@
 #!/bin/bash
 # SPDX-License-Identifier: 0BSD
 # Dylan Erwan Le Morzellec (BECKHOFF Automation France SARL)
-# The script is provided AS IS and its behaviour is not guaranteed
+# The script is provided AS IS and its behaviour is not warranted
 
-# Script to set up the TF1200-Sway graphical interface and HMI Client and custom configuration
+# Script to set up the TF1200-Sway graphical interface and HMI Client and custom configuration with TwinCAT PLC HMI Web.
 
 set -eu -o pipefail
 
@@ -15,12 +15,13 @@ if ! touch "$LOG_FILE" 2>/dev/null; then
 fi
 exec > >(tee -a "$LOG_FILE") 2>&1
 
-# Define colors using ANSI escape codes
-RED='\033[0;31m'
-GREEN='\033[0;32m'
+# Define colours using ANSI escape codes
+RED='\033[1;31m'
+GREEN='\033[1;32m'
 YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color (reset)
+MAGENTA='\033[1;35m'
+CYAN='\033[1;36m'
+NC='\033[0m' # No colour (reset)
 
 # Constants
 readonly script_version="1.1"
@@ -138,7 +139,7 @@ if [ -z "$(grep -F "export XDG_RUNTIME_DIR" "${graph_user_profile_path}")" ]; th
 	# All compositors using Wayland will need a runtime directory
 	XDG_RUNTIME_DIR=/run/user/$(id -u "${graph_user}") export XDG_RUNTIME_DIR
 	# Fix software rendering issues (EDIT BAFR)
-	WLR_RENDERER_ALLOW_SOFTWARE=1 export WLR_RENDERER_ALLOW_SOFTWARE
+	# WLR_RENDERER_ALLOW_SOFTWARE=1 export WLR_RENDERER_ALLOW_SOFTWARE
 
 EOF
 fi 
@@ -508,7 +509,7 @@ cat >> "${tf1200_userconfig}/config.json" << EOF
         "width": 956,
         "height": 1030
     },
-    "startUrl": "https://127.0.0.1:80", 
+    "startUrl": "http://127.0.0.1:42341/Tc3PlcHmiWeb/Port_851/Visu/webvisu.htm", 
     "toggleDevToolsKeys": "",
     "windowTitle": "",
     "zoomInKeys": "CmdOrCtrl+Plus",
@@ -526,7 +527,7 @@ if [ -z "$(grep -F "start the Sway Compositor and execute the command" "${graph_
 
 # start the Sway Compositor and execute the command defined in
 # ${sway_userconfig}/config
-WLR_RENDERER_ALLOW_SOFTWARE=1 sway -c "${sway_userconfig}/config" > ${sway_userconfig}/sway-out.log 2> ${sway_userconfig}/sway-err.log
+sway -c "${sway_userconfig}/config" > ${sway_userconfig}/sway-out.log 2> ${sway_userconfig}/sway-err.log
 EOF
 fi
 chown -R ${graph_user} ${graph_user_bashrc_path}

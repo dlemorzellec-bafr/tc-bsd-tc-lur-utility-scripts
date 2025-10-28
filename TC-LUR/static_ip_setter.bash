@@ -1,7 +1,7 @@
 #!/bin/bash
 # SPDX-License-Identifier: 0BSD
 # Dylan Erwan Le Morzellec (BECKHOFF Automation France SARL)
-# The script is provided AS IS and its behaviour is not guaranteed
+# The script is provided AS IS and its behaviour is not warranted
 
 # Script to set a static IP adress for a given network interface
 

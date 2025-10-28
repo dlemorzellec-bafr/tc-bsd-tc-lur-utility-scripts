@@ -1,8 +1,7 @@
 #!/bin/bash
 # SPDX-License-Identifier: 0BSD
-
 # Dylan Erwan Le Morzellec (BECKHOFF Automation France SARL)
-# The script is provided AS IS and its behaviour is not guaranteed
+# The script is provided AS IS and its behaviour is not warranted
 
 # Script to set up repositories, TwinCAT XAR runtime and some French accessibility for Beckhoff CX82xx and CX9240 IPCs
 
@@ -17,10 +16,11 @@ fi
 exec > >(tee -a "$LOG_FILE") 2>&1
 
 # Define colours using ANSI escape codes
-RED='\033[0;31m'
-GREEN='\033[0;32m'
+RED='\033[1;31m'
+GREEN='\033[1;32m'
 YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
+MAGENTA='\033[1;35m'
+CYAN='\033[1;36m'
 NC='\033[0m' # No colour (reset)
 
 # Constants
@@ -142,7 +142,7 @@ echo -e "${GREEN}Configuration du fuseau horaire sur Europe/Paris ...${NC}"
 timedatectl set-timezone Europe/Paris
 echo "$(date)"
 
-# Configure keyboard layout to AZERTY default
+# Configure keyboard layout to AZERTY default (French)
 echo ""
 echo -e "${GREEN}Configuration du clavier AZERTY francais ...${NC}"
 DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends keyboard-configuration console-setup
