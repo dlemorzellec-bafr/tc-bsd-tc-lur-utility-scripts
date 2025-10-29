@@ -17,6 +17,7 @@ It is assumed for each script to be executed in `/home/Administrator` :
     sudo bash <name of script>.bash
 
 ## Roadmap
+
 ### TwinCAT/BSD
 - [x] TF1200 and Sway Installation and configuration script
 	- [ ] Standalone
@@ -24,9 +25,10 @@ It is assumed for each script to be executed in `/home/Administrator` :
 	- [x] With TF2000 TwinCAT HMI 1.14
 	- [x] With TF1810 PLC HMI Web 
 - [x] TF6250 Modbus/TCP Installation and configuration script
+- [x] eGalax Touchscreen support
 - [ ] ... Possibly more to come (including offline versions)
-### TwinCAT/LUR
 
+### TwinCAT/LUR
  - [x] Beckhoff IPC configuration (with apt authentication and TwinCAT XAR installation)
  - [x] TF1200 and Sway Installation and configuration script
 	 - [ ] Standalone
@@ -56,6 +58,7 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
     sudo bash <nom du script>.bash
 
 ## Feuille de route
+
 ### TwinCAT/BSD
 - [x] Script d'installation et de configuration pour TF1200 et Sway
 	- [ ] Seuls
@@ -63,9 +66,10 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
 	- [x] Avec TF2000 TwinCAT HMI 1.14
 	- [x] Avec TF1810 PLC HMI Web 
 - [x] Script d'installation et de configuration pour TF6250 Modbus/TCP
-- [ ] ... Potentiellement davantage à venir
-### TwinCAT/LUR
+- [x] Support pour eGalax Touchscreen
+- [ ] ... Potentiellement davantage à venir (y compris des versions hors-ligne)
 
+### TwinCAT/LUR
  - [x] Configuration de l'IPC Beckhoff (authentification pour apt, installation de TwinCAT XAR, clavier en français, heure de Paris)
  - [x] Script d'installation et de configuration pour TF1200 et Sway
 	 - [ ] Seuls
@@ -74,7 +78,7 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
 - [x] Script d'installation et de configuration pour TF6250 Modbus/TCP
 - [x] Script d'affectation d'une adresse IP fixe
 - [ ] Script pour l'installation de Docker et le déploiement d'un conteneur TwinCAT XAR 
-- [ ] ... Potentiellement davantage à venir
+- [ ] ... Potentiellement davantage à venir (y compris des versions hors-ligne)
 
 Il ne s'agit pas de scripts ou documents officiels de Beckhoff.
 
