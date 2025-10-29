@@ -31,7 +31,7 @@ It is assumed for each script to be executed in `/home/Administrator` :
 ### TwinCAT/LUR
  - [x] Beckhoff IPC configuration (with apt authentication and TwinCAT XAR installation)
  - [x] TF1200 and Sway Installation and configuration script
-	 - [ ] Standalone
+	 - [x] Standalone
 	 - [x] With TF2000 TwinCAT HMI 1.14
 	 - [x] With TF1810 PLC HMI Web
 - [x] TF6250 Modbus/TCP Installation and configuration script
@@ -66,7 +66,7 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
 	- [x] Avec TF2000 TwinCAT HMI 1.14
 	- [x] Avec TF1810 PLC HMI Web 
 - [x] Script d'installation et de configuration pour TF6250 Modbus/TCP
-- [x] Support pour eGalax Touchscreen
+- [x] Support pour écran tactile eGalax
 - [ ] ... Potentiellement davantage à venir (y compris des versions hors-ligne)
 
 ### TwinCAT/LUR

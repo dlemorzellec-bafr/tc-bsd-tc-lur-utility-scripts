@@ -3,7 +3,7 @@
 # Dylan Erwan Le Morzellec (BECKHOFF Automation France SARL)
 # The script is provided AS IS and its behaviour is not warranted
 
-# Script to set up the TF1200-Sway graphical interface and HMI Client and custom configuration with TwinCAT HMI Server
+# Script to set up the TF1200-Sway graphical interface and HMI Client and custom configuration with TwinCAT PLC HMI Web.
 
 set -eu -o pipefail
 
@@ -32,7 +32,6 @@ readonly twincat_folder="/etc/TwinCAT"
 readonly twincat_functions="${twincat_folder}/Functions"
 readonly tf1200_path="${twincat_functions}/TF1200-UI-Client"
 readonly tf1200_srcpath="${tf1200_path}/scripts"
-readonly tf2000_path="${twincat_functions}/TF2000-HMI-Server"
 
 readonly graph_user="tf1200-user"
 readonly graph_user_path="/home/${graph_user}"
@@ -45,11 +44,11 @@ readonly tf1200_userconfig="${graph_user_path}/.config/TF1200-UI-Client"
 usage() {
 	echo ""
 	echo "USAGE : "
-	echo -e "  ${GREEN}sudo bash ${MAGENTA}$0 <mot de passe pour TF1200-TF2000>${NC}"
+	echo -e "  ${GREEN}sudo bash ${MAGENTA}$0 <mot de passe pour TF1200>${NC}"
 	echo "   OU "
-	echo -e "  ${GREEN}sudo bash ${MAGENTA}$0${NC}     (Un mot de passe pour l'utilisateur graphique et TwinCAT HMI vous sera demande)"
+	echo -e "  ${GREEN}sudo bash ${MAGENTA}$0${NC}     (Un mot de passe pour l'utilisateur graphique vous sera demande)"
 	echo ""
-	echo -e "${CYAN}Ce script permet l'installation et la configuration de TF1200 et TF2000.${NC}"
+	echo -e "${CYAN}Ce script permet l'installation et la configuration de TF1200.${NC}"
 	exit 1
 }
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
@@ -75,7 +74,7 @@ fi
 if [ "$#" -eq 1 ]; then
 	HMI_PASSWORD="$1"
 elif [ "$#" -eq 0 ]; then
-	read -rsp "Entrez le mot de passe pour TwinCAT HMI : " HMI_PASSWORD
+	read -rsp "Entrez le mot de passe pour l'utilisateur graphique : " HMI_PASSWORD
 	echo
 else
 	usage
@@ -86,7 +85,6 @@ fi
 echo ""
 echo -e "${GREEN}Installation de paquets supplementaires ...${NC}"
 PACKAGES=(
-tf2000-hmi-server
 tf1200-ui-client
 seatd
 dbus
@@ -108,14 +106,6 @@ done
 echo ""
 echo -e "${GREEN}Vidage du cache d'APT ...${NC}"
 apt-get clean
-
-# Initialise TwinCAT HMI server
-echo ""
-echo -e "${GREEN}Initialisation du serveur TwinCAT HMI ...${NC}"
-TcHmiSrv --initialize --password="${HMI_PASSWORD}"
-
-systemctl enable --now TcHmiSrv.service
-systemctl start TcHmiSrv.service
 
 # Initialise seatd
 echo ""
@@ -163,7 +153,7 @@ chown -R ${graph_user} ${tf1200_userconfig}
 echo ""
 echo -e "${GREEN}Creation de la configuration de Sway ...${NC}"
 touch ${sway_userconfig}/config
-cat > "${sway_userconfig}/config" << EOF
+cat >> "${sway_userconfig}/config" << EOF
 # Configuration de Sway (BAFR, DELM, 2025-05-06)
 
 ### EDIT BAFR : Support for XWayland
@@ -459,7 +449,7 @@ chown -R ${graph_user} ${sway_userconfig}/config
 echo ""
 echo -e "${GREEN}Creation de la configuration de TF1200-UI-Client ...${NC}"
 touch ${tf1200_userconfig}/config
-cat > "${tf1200_userconfig}/config.json" << EOF
+cat >> "${tf1200_userconfig}/config.json" << EOF
 {
     "allowMove": true,
     "allowResize": true,
@@ -514,7 +504,7 @@ cat > "${tf1200_userconfig}/config.json" << EOF
         "width": 956,
         "height": 1030
     },
-    "startUrl": "https://127.0.0.1:2020", 
+    "startUrl": "https://www.beckhoff.com/fr-fr/", 
     "toggleDevToolsKeys": "",
     "windowTitle": "",
     "zoomInKeys": "CmdOrCtrl+Plus",

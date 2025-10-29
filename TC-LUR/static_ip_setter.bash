@@ -33,6 +33,7 @@ usage() {
 	echo ""
 	echo -e "${CYAN}Ce script permet de configurer une adresse IP fixe pour une interface reseau donnee.${NC}"
 	echo ""
+	exit 1
 }
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
 	usage

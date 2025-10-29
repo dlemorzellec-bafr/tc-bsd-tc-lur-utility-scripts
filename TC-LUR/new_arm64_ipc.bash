@@ -44,10 +44,13 @@ readonly etc_keyboard_conf="/etc/default/keyboard"
 # Usage display function
 usage() {
 	echo ""
-	echo "Usage : "
-	echo "  sudo bash $0 <courriel> <mot de passe>"
+	echo "USAGE : "
+	echo -e "  ${GREEN}sudo bash ${MAGENTA}$0 <courriel> <mot de passe>${NC}"
 	echo "   OU "
-	echo "  sudo bash $0     (Une adresse de courriel et un mot de passe vous seront demandes)"
+	echo -e "  ${GREEN}sudo bash ${MAGENTA}$0${NC}     (Une adresse de courriel et un mot de passe vous seront demandes)"
+	echo ""
+	echo -e "${CYAN}Ce script permet de configurer le gestionnaire de paquets, l'installation de TwinCAT XAR et l'accessibilite francaise sur une nouvelle image TC/LUR.${NC}"
+	exit 1
 }
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
 	usage
@@ -56,7 +59,7 @@ fi
 
 # Ensure script is run as root
 if [[ "$EUID" -ne 0 ]]; then
-	echo "Veuillez executer ce script avec sudo."
+	echo -e "${RED}Veuillez executer ce script avec sudo.${NC}"
 	usage
 	exit 1
 fi
@@ -64,7 +67,7 @@ fi
 # Verify internet connection to deb.beckhoff.com
 echo "Verification de l'acces reseau a deb.beckhoff.com ..."
 if ! ping -c 1 -W 2 deb.beckhoff.com >/dev/null; then
-	echo "Erreur : acces reseau a deb.beckhoff.com impossible. Verifiez la connectivite."
+	echo -e "${RED}Erreur : acces reseau a deb.beckhoff.com impossible. Verifiez la connectivite.${NC}"
 	exit 1
 fi
 
@@ -192,6 +195,7 @@ dialog
 apt-utils
 tc31-xar-um
 git
+lshw
 )
 for PACKAGE in "${PACKAGES[@]}"; do
 	echo ""

@@ -43,10 +43,13 @@ readonly tf1200_userconfig="${graph_user_path}/.config/TF1200-UI-Client"
 
 # Usage display function
 usage() {
-	echo "Usage : "
-	echo "  sudo bash $0 <mot de passe pour TF1200-TF2000>"
+	echo ""
+	echo "USAGE : "
+	echo -e "  ${GREEN}sudo bash ${MAGENTA}$0 <mot de passe pour TF1200-TF1810>${NC}"
 	echo "   OU "
-	echo "  sudo bash $0     (Un mot de passe pour TwinCAT HMI vous sera demande)"
+	echo -e "  ${GREEN}sudo bash ${MAGENTA}$0${NC}     (Un mot de passe pour l'utilisateur graphique vous sera demande)"
+	echo ""
+	echo -e "${CYAN}Ce script permet l'installation et la configuration de TF1200 et TF1810.${NC}"
 	exit 1
 }
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
@@ -56,7 +59,7 @@ fi
 
 # Ensure script is run as root
 if [[ "$EUID" -ne 0 ]]; then
-	echo "Veuillez executer ce script avec sudo."
+	echo -e "${RED}Veuillez executer ce script avec sudo.${NC}"
 	usage
 	exit 1
 fi
@@ -64,7 +67,7 @@ fi
 # Verify internet connection to deb.beckhoff.com
 echo "Verification de l'acces reseau a deb.beckhoff.com ..."
 if ! ping -c 1 -W 2 deb.beckhoff.com >/dev/null; then
-	echo "Erreur : acces reseau a deb.beckhoff.com impossible. Verifiez la connectivite."
+	echo -e "${RED}Erreur : acces reseau a deb.beckhoff.com impossible. Verifiez la connectivite.${NC}"
 	exit 1
 fi
 
@@ -72,7 +75,7 @@ fi
 if [ "$#" -eq 1 ]; then
 	HMI_PASSWORD="$1"
 elif [ "$#" -eq 0 ]; then
-	read -rsp "Entrez le mot de passe pour TwinCAT HMI : " HMI_PASSWORD
+	read -rsp "Entrez le mot de passe pour l'utilisateur graphique : " HMI_PASSWORD
 	echo
 else
 	usage
