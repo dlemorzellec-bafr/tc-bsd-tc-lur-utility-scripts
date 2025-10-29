@@ -20,7 +20,7 @@ It is assumed for each script to be executed in `/home/Administrator` :
 
 ### TwinCAT/BSD
 - [x] TF1200 and Sway Installation and configuration script
-	- [ ] Standalone
+	- [x] Standalone
 	- [x] With TF2000 TwinCAT HMI 1.12
 	- [x] With TF2000 TwinCAT HMI 1.14
 	- [x] With TF1810 PLC HMI Web 
@@ -61,7 +61,7 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
 
 ### TwinCAT/BSD
 - [x] Script d'installation et de configuration pour TF1200 et Sway
-	- [ ] Seuls
+	- [x] Seuls
 	- [x] Avec TF2000 TwinCAT HMI 1.12
 	- [x] Avec TF2000 TwinCAT HMI 1.14
 	- [x] Avec TF1810 PLC HMI Web 
@@ -72,7 +72,7 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
 ### TwinCAT/LUR
  - [x] Configuration de l'IPC Beckhoff (authentification pour apt, installation de TwinCAT XAR, clavier en français, heure de Paris)
  - [x] Script d'installation et de configuration pour TF1200 et Sway
-	 - [ ] Seuls
+	 - [x] Seuls
 	 - [x] Avec TF2000 TwinCAT HMI 1.14
 	 - [x] Avec TF1810 PLC HMI Web
 - [x] Script d'installation et de configuration pour TF6250 Modbus/TCP

@@ -1,159 +1,133 @@
-#!/bin/bash
+#!/bin/sh
 # SPDX-License-Identifier: 0BSD
 # Dylan Erwan Le Morzellec (BECKHOFF Automation France SARL)
 # The script is provided AS IS and its behaviour is not warranted
 
 # Script to set up the TF1200-Sway graphical interface and HMI Client and custom configuration.
 
-set -eu -o pipefail
-
-# Logging script return
-TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
-LOG_FILE="/var/log/bafr_tclur_setup_${TIMESTAMP}.log"
-if ! touch "$LOG_FILE" 2>/dev/null; then
-	LOG_FILE="/tmp/bafr_tclur_setup_${TIMESTAMP}.log"
-fi
-exec > >(tee -a "$LOG_FILE") 2>&1
-
-# Define colours using ANSI escape codes
-RED='\033[1;31m'
-GREEN='\033[1;32m'
-YELLOW='\033[1;33m'
-MAGENTA='\033[1;35m'
-CYAN='\033[1;36m'
-NC='\033[0m' # No colour (reset)
-
 # Constants
-readonly script_version="1.1"
-readonly script_date="2025-10-25"
-readonly script_path="$(cd "$(dirname "${0}")" && pwd)"
-
-readonly twincat_folder="/etc/TwinCAT"
-readonly twincat_functions="${twincat_folder}/Functions"
-readonly tf1200_path="${twincat_functions}/TF1200-UI-Client"
-readonly tf1200_srcpath="${tf1200_path}/scripts"
-
 readonly graph_user="tf1200-user"
-readonly graph_user_path="/home/${graph_user}"
-readonly graph_user_bashrc_path="${graph_user_path}/.bashrc"
-readonly graph_user_profile_path="${graph_user_path}/.profile"
-readonly sway_userconfig="${graph_user_path}/.config/sway"
-readonly tf1200_userconfig="${graph_user_path}/.config/TF1200-UI-Client"
+readonly user_path="/home/${graph_user}"
+readonly tf1200_path="/usr/local/etc/TwinCAT/Functions/TF1200-UI-Client"
+readonly tf1200_srcpath="/usr/local/etc/TwinCAT/Functions/TF1200-UI-Client/scripts"
+readonly sway_userconfig="${user_path}/.config/sway"
+readonly tf1200_userconfig="${user_path}/.config/TF1200-UI-Client"
+readonly shrc_path="${user_path}/.shrc"
+readonly script_path="$(cd "$(dirname "${0}")" && pwd)"
+tst="$(date +%Y%m%d_%H%M%S)"
 
-# Usage display function
-usage() {
-	echo ""
-	echo "USAGE : "
-	echo -e "  ${GREEN}sudo bash ${MAGENTA}$0 <mot de passe pour TF1200>${NC}"
-	echo "   OU "
-	echo -e "  ${GREEN}sudo bash ${MAGENTA}$0${NC}     (Un mot de passe pour l'utilisateur graphique vous sera demande)"
-	echo ""
-	echo -e "${CYAN}Ce script permet l'installation et la configuration de TF1200.${NC}"
-	exit 1
-}
-if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
-	usage
-	exit 1
-fi
+echo ""
+echo "SCRIPT D'INSTALLATION ET DE CONFIGURATION DE LA TF1200 (BAFR)"
+echo ""
 
 # Ensure script is run as root
-if [[ "$EUID" -ne 0 ]]; then
-	echo -e "${RED}Veuillez executer ce script avec sudo.${NC}"
-	usage
-	exit 1
-fi
-
-# Verify internet connection to deb.beckhoff.com
-echo "Verification de l'acces reseau a deb.beckhoff.com ..."
-if ! ping -c 1 -W 2 deb.beckhoff.com >/dev/null; then
-	echo -e "${RED}Erreur : acces reseau a deb.beckhoff.com impossible. Verifiez la connectivite.${NC}"
-	exit 1
-fi
-
-# Collect credentials
-if [ "$#" -eq 1 ]; then
-	HMI_PASSWORD="$1"
-elif [ "$#" -eq 0 ]; then
-	read -rsp "Entrez le mot de passe pour l'utilisateur graphique : " HMI_PASSWORD
-	echo
-else
-	usage
-	exit 1
-fi
-
-# Install needed packages (to edit as needed)
-echo ""
-echo -e "${GREEN}Installation de paquets supplementaires ...${NC}"
-PACKAGES=(
-tf1200-ui-client
-seatd
-dbus
-mesa-utils
-mesa-va-drivers
-fonts-dejavu
-foot
-bemenu
-grim
-grimshot
-)
-for PACKAGE in "${PACKAGES[@]}"; do
+if [ "$(id -u)" -ne 0 ]; then
 	echo ""
-	echo -e "${GREEN}Installation de $PACKAGE ...${NC}"
-	apt-get install -y --no-install-recommends "$PACKAGE"
-done
+	echo "Le script doit etre execute en tant que root."
+	echo ""
+	exit 1
+fi
 
-# Clear APT cache to save space
-echo ""
-echo -e "${GREEN}Vidage du cache d'APT ...${NC}"
-apt-get clean
+# A password must be given (even if "1")
+if [ -z "$1" ]; then
+	echo ""
+	echo "Un argument supplementaire est necessaire a l'execution du script : Mot de passe pour TF1200."
+	echo ""
+	exit 1
+fi
+password="$1"
 
-# Initialise seatd
+# Creation of a restore point before doing any change
 echo ""
-echo -e "${GREEN}Initialisation de seatd ...${NC}"
-systemctl enable --now seatd.service
-systemctl start seatd.service
-
-# Initialise dbus
+echo "Creation du point de restauration 'BAFR_before_TF1200' ..."
 echo ""
-echo -e "${GREEN}Initialisation de dbus ...${NC}"
-systemctl enable --now dbus.service
-systemctl start dbus.service
+prefix="BAFR_before_TF1200_"
+touch ${script_path}/tmp_rplist.txt
+restorepoint status > ${script_path}/tmp_rplist.txt
+if ! grep -q ${prefix} ${script_path}/tmp_rplist.txt; then
+	echo ""
+	echo "Point de restauration créé !"
+	echo ""
+	restorepoint create "BAFR_before_TF1200_${tst}"
+else
+	echo ""
+	echo "Le point de restauration existe deja."
+	echo ""
+fi
+rm -f ${script_path}/tmp_rplist.txt
 
 # Creation of the graphical user
 echo ""
-echo -e "${GREEN}Creation de l'utilisateur graphique ${graph_user} ...${NC}"
-useradd -c "User for TwinCAT UI Client" -m -s "$(command -v bash)" "${graph_user}"
-sed -i "s/^${graph_user}:\!:/${graph_user}::/g" /etc/shadow
-usermod -aG video "${graph_user}"
-
-# Configuration of the Wayland runtime for the graphical user
+echo "Creation de l'utilisateur graphique..."
 echo ""
-echo -e "${GREEN}Configuration du runtime Wayland pour l'utilisateur graphique ...${NC}"
-if [ -z "$(grep -F "export XDG_RUNTIME_DIR" "${graph_user_profile_path}")" ]; then
-	cat >> "${graph_user_profile_path}" <<- EOF
-	# All compositors using Wayland will need a runtime directory
-	XDG_RUNTIME_DIR=/run/user/$(id -u "${graph_user}") export XDG_RUNTIME_DIR
-	# Fix software rendering issues (EDIT BAFR)
-	# WLR_RENDERER_ALLOW_SOFTWARE=1 export WLR_RENDERER_ALLOW_SOFTWARE
+pw useradd "${graph_user}" -m -s /bin/sh
+echo "${password}" | pw usermod "${graph_user}" -h 0
+if [ $? -eq 0 ]; then
+	echo "Utilisateur graphique '${graph_user}' cree avec succes."
+else
+	echo "Erreur de creation de l'utilisateur graphique."
+	exit 1
+fi
 
-EOF
-fi 
-
-# Creation of configuration folders
+# Configure keyboard layout to AZERTY default (French)
 echo ""
-echo -e "${GREEN}Creation des dossiers de configuration ...${NC}"
-mkdir -p ${graph_user_path}/.config
-mkdir -p ${graph_user_path}/.config/sway
-mkdir -p ${graph_user_path}/.config/TF1200-UI-Client
-chown -R ${graph_user} ${graph_user_path}/.config
-chown -R ${graph_user} ${sway_userconfig}
-chown -R ${graph_user} ${tf1200_userconfig}
-
-# Creation of the Sway configuration file
+echo "Forcage du clavier console en francais standard (si ce n'est deja fait)..."
 echo ""
-echo -e "${GREEN}Creation de la configuration de Sway ...${NC}"
+sysrc keymap="fr.kbd"
+
+# An upgrade of the pkg package manager is often necessary at this point
+echo ""
+echo "Mise a jour des depots et de pkg..."
+echo ""
+pkg update -f
+pkg install -y pkg
+
+# Install needed packages
+echo ""
+echo "Installation de paquets logiciels necessaires..."
+echo ""
+PACKAGES="
+TF1200-UI-Client
+dejavu
+foot
+dmenu
+dmenu-wayland
+"
+
+for PACKAGE in $PACKAGES; do
+	pkg install -y $PACKAGE
+done
+
+# Activate dbus
+echo ""
+echo "Activation de dbus..."
+echo ""
+sysrc dbus_enable="YES"
+service dbus start
+
+# Creation of configuration folders for tf1200-user
+echo ""
+echo "Creation des dossiers de configuration..."
+echo ""
+mkdir ${user_path}/.config
+mkdir ${user_path}/.config/sway
+mkdir ${user_path}/.config/TF1200-UI-Client
+chown -R ${graph_user} ${user_path}/.config
+chown -R ${graph_user} ${user_path}/.config/sway
+chown -R ${graph_user} ${user_path}/.config/TF1200-UI-Client
+
+# Using Beckhoff BADE script to set up Sway and Wayland
+echo ""
+echo "Installation de Sway et de Wayland..."
+echo ""
+${tf1200_srcpath}/setup-sway.sh --user=${graph_user}
+
+# Generate Sway configuration file
+echo ""
+echo "Configuration de Sway..."
+echo ""
 touch ${sway_userconfig}/config
-cat >> "${sway_userconfig}/config" << EOF
+cat > "${sway_userconfig}/config" << EOF
 # Configuration de Sway (BAFR, DELM, 2025-05-06)
 
 ### EDIT BAFR : Support for XWayland
@@ -171,16 +145,17 @@ set \$right l
 # Your preferred terminal emulator
 set \$term foot
 # Your preferred application launcher
-#set \$menu \$dmenu_path | dmenu | xargs swaymsg exec --    #EDIT BAFR
-set \$menu bemenu-run -i
+#set \$menu wmenu-run	#EDIT BAFR
+#set \$menu \$dmenu_path | dmenu_wl | xargs swaymsg exec --
+set \$menu dmenu-wl_run -i
 
 ### Output configuration
 #
 # Default wallpaper (more resolutions are available in /usr/local/share/backgrounds/sway/)
 #output * bg /usr/local/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill
 #
-# TC/LUR wallpaper
-output * bg ${tf1200_srcpath}/backgrounds/tclinux_1366x768.png center #FFFFFF
+# TC/BSD wallpaper
+output * bg ${tf1200_srcpath}/backgrounds/tcbsd_1366x768.png center #FFFFFF
 #
 # Example configuration:
 #
@@ -267,7 +242,7 @@ input * xkb_layout "fr"
 #
 # Execute the TwinCAT UI Client with the specified arguments. #	EDIT BAFR Force debug logging
 #exec "$(cd "$(dirname "${script_path}")" && pwd)/TF1200-UI-Client" \$@
-exec "${tf1200_path}/TF1200-UI-Client" --user=${graph_user} > ${tf1200_userconfig}/tf1200-out.log 2> ${tf1200_userconfig}/tf1200-err.log
+exec "/usr/local/etc/TwinCAT/Functions/TF1200-UI-Client/TF1200-UI-Client" --user=${graph_user} > ${tf1200_userconfig}/tf1200-out.log 2> ${tf1200_userconfig}/tf1200-err.log
 
 ### Key bindings
 #
@@ -281,9 +256,9 @@ exec "${tf1200_path}/TF1200-UI-Client" --user=${graph_user} > ${tf1200_userconfi
 
 	# Start your launcher
 	bindsym \$mod+d exec \$menu
-
-	# (Re-)Start TF1200-UI-Client Electron browser 		(Ajout BAFR - Raccourci pour UI Client)
-	bindsym \$mod+Alt+k exec ${tf1200_path}/TF1200-UI-Client
+	
+	# Start Beckhoff TF1200 HMI UI Client
+	bindsym \$mod+Alt+k exec /usr/local/etc/TwinCAT/Functions/TF1200-UI-Client/TF1200-UI-Client
 
 	# Drag floating windows by holding down \$mod and left mouse button.
 	# Resize them with right mouse button + \$mod.
@@ -445,11 +420,12 @@ include /usr/local/etc/sway/config.d/*
 EOF
 chown -R ${graph_user} ${sway_userconfig}/config
 
-# Creation of the TF1200 configuration file
+# Generate TF1200 UI Client configuration
 echo ""
-echo -e "${GREEN}Creation de la configuration de TF1200-UI-Client ...${NC}"
-touch ${tf1200_userconfig}/config
-cat >> "${tf1200_userconfig}/config.json" << EOF
+echo "Configuration de la fonction TF1200..."
+echo ""
+touch ${tf1200_userconfig}/config.json
+cat > "${tf1200_userconfig}/config.json" << EOF
 {
     "allowMove": true,
     "allowResize": true,
@@ -513,35 +489,29 @@ cat >> "${tf1200_userconfig}/config.json" << EOF
 EOF
 chown -R ${graph_user} ${tf1200_userconfig}/config.json
 
-# Configuration of Sway Autostart and debug logging
+# Set up automatic Sway execution with debug logging in user config folder
 echo ""
-echo -e "${GREEN}Configuration du demarrage automatique de Sway ...${NC}"
-touch ${graph_user_bashrc_path}
-if [ -z "$(grep -F "start the Sway Compositor and execute the command" "${graph_user_bashrc_path}")" ]; then
-	cat >> "${graph_user_bashrc_path}" << EOF
+echo "Configuration du demarrage automatique de Sway..."
+echo ""
+touch ${shrc_path}
+if test -z "$(grep -F "start the Sway Compositor and execute the command" "${shrc_path}")"; then
+	cat >> "${shrc_path}" << EOF
 
 # start the Sway Compositor and execute the command defined in
 # ${sway_userconfig}/config
 sway -c "${sway_userconfig}/config" > ${sway_userconfig}/sway-out.log 2> ${sway_userconfig}/sway-err.log
 EOF
 fi
-chown -R ${graph_user} ${graph_user_bashrc_path}
+chown -R ${graph_user} ${shrc_path}
 
-# Configuration of graphical user auto log-in
+# Auto log-in configuration
 echo ""
-echo -e "${GREEN}Configuration de l'auto log-in de l'utilisateur graphique ...${NC}"
+echo "Configuration de l'auto log-in..."
+echo ""
 ${tf1200_srcpath}/setup-autologin.sh --user=${graph_user}
 
-# Reboot system to finish set up TwinCAT/LUR
+# Creation of a restore point after the changes
 echo ""
-echo -e "${RED}Un redemarrage du systeme est necessaire.${NC}"
-if [ "$#" -eq 0 ]; then
-	read -rp "Redemarrer le systeme maintenant ? [Y/n] : " REBOOT_CHOICE
-	if [[ "$REBOOT_CHOICE" =~ ^[OoYy]?$ ]]; then
-		reboot
-	else
-		echo -e "${RED}Redemarrage annule. Veuillez redemarrer manuellement pour finaliser la configuration.${NC}"
-	fi
-else
-	reboot
-fi
+echo "Creation du point de restauration 'BAFR_after_TF1200' ..."
+echo ""
+restorepoint create "BAFR_after_TF1200_${tst}"
