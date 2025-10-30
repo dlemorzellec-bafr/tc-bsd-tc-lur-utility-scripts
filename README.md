@@ -25,17 +25,18 @@ It is assumed for each script to be executed in `/home/Administrator` :
 	- [x] With TF2000 TwinCAT HMI 1.14
 	- [x] With TF1810 PLC HMI Web 
 - [x] TF6250 Modbus/TCP Installation and configuration script
-- [x] eGalax Touchscreen support
+- [x] eGalax Touchscreen support script
 - [ ] ... Possibly more to come (including offline versions)
 
 ### TwinCAT/LUR
- - [x] Beckhoff IPC configuration (with apt authentication and TwinCAT XAR installation)
+ - [x] Beckhoff IPC configuration script (with apt authentication and TwinCAT XAR installation)
  - [x] TF1200 and Sway Installation and configuration script
 	 - [x] Standalone
 	 - [x] With TF2000 TwinCAT HMI 1.14
 	 - [x] With TF1810 PLC HMI Web
 - [x] TF6250 Modbus/TCP Installation and configuration script
 - [x] Static IP Setter script
+- [x] Automount removable devices script
 - [ ] Docker installation script with TwinCAT XAR container deployment 
 - [ ] ... Possibly more to come (including offline versions)
 
@@ -66,17 +67,18 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
 	- [x] Avec TF2000 TwinCAT HMI 1.14
 	- [x] Avec TF1810 PLC HMI Web 
 - [x] Script d'installation et de configuration pour TF6250 Modbus/TCP
-- [x] Support pour écran tactile eGalax
+- [x] Script d'activation du support pour écran tactile eGalax
 - [ ] ... Potentiellement davantage à venir (y compris des versions hors-ligne)
 
 ### TwinCAT/LUR
- - [x] Configuration de l'IPC Beckhoff (authentification pour apt, installation de TwinCAT XAR, clavier en français, heure de Paris)
+ - [x] Script de configuration de l'IPC Beckhoff (authentification pour apt, installation de TwinCAT XAR, clavier en français, heure de Paris)
  - [x] Script d'installation et de configuration pour TF1200 et Sway
 	 - [x] Seuls
 	 - [x] Avec TF2000 TwinCAT HMI 1.14
 	 - [x] Avec TF1810 PLC HMI Web
 - [x] Script d'installation et de configuration pour TF6250 Modbus/TCP
 - [x] Script d'affectation d'une adresse IP fixe
+- [x] Script d'activation du montage automatique des périphériques amovibles
 - [ ] Script pour l'installation de Docker et le déploiement d'un conteneur TwinCAT XAR 
 - [ ] ... Potentiellement davantage à venir (y compris des versions hors-ligne)
 
