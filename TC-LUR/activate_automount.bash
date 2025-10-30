@@ -9,9 +9,9 @@ set -eu -o pipefail
 
 # Logging script return
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
-LOG_FILE="/var/log/static_ip_setup_${TIMESTAMP}.log"
+LOG_FILE="/var/log/automount_activation_${TIMESTAMP}.log"
 if ! touch "$LOG_FILE" 2>/dev/null; then
-	LOG_FILE="/tmp/static_ip_setup_${TIMESTAMP}.log"
+	LOG_FILE="/tmp/automount_activation_${TIMESTAMP}.log"
 fi
 exec > >(tee -a "$LOG_FILE") 2>&1
 
