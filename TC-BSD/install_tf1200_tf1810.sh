@@ -105,6 +105,20 @@ echo "Initialisation du serveur PLC HMI Web..."
 echo ""
 service TcSystemService restart
 
+# Add firewall rule for TF1810 and reload firewall
+echo ""
+echo "Ajout d'une exception du pare-feu pour TF1810"
+echo ""
+cat >> "/etc/pf.conf" << EOF
+
+# allow incoming TCP connections on port 42341 (TF1810 - PLC HMI Web)
+pass in quick proto tcp to port 42341 keep state
+
+EOF
+service pf restart
+pfctl -f /etc/pf.conf
+service pf restart
+
 # Activate dbus
 echo ""
 echo "Activation de dbus..."

@@ -24,8 +24,8 @@ CYAN='\033[1;36m'
 NC='\033[0m' # No colour (reset)
 
 # Constants
-readonly script_version="1.1"
-readonly script_date="2025-10-25"
+readonly script_version="1.2"
+readonly script_date="2025-10-30"
 readonly script_path="$(cd "$(dirname "${0}")" && pwd)"
 
 readonly twincat_folder="/etc/TwinCAT"
@@ -33,6 +33,8 @@ readonly twincat_functions="${twincat_folder}/Functions"
 readonly tf1200_path="${twincat_functions}/TF1200-UI-Client"
 readonly tf1200_srcpath="${tf1200_path}/scripts"
 readonly tf1810_path="${twincat_functions}/TF1810-PLC-HMI-Web"
+
+readonly firewall_rulepath="/etc/nftables.conf.d/70-plchmiweb.conf"
 
 readonly graph_user="tf1200-user"
 readonly graph_user_path="/home/${graph_user}"
@@ -109,11 +111,25 @@ echo ""
 echo -e "${GREEN}Vidage du cache d'APT ...${NC}"
 apt-get clean
 
-# Initialise PLC HMI Web server
-# "Please restart TwinCAT to start the Tc3PlcHmiWebService"
+# Initialisation of TF1810 - PLC HMI Web server by restarting TwinCAT system service
 echo ""
 echo -e "${GREEN}Initialisation du serveur PLC HMI Web ...${NC}"
 systemctl start TcSystemServiceUm.service
+
+# Add firewall rule for TF1810 and reload firewall
+echo ""
+echo -e "${GREEN}Ajout d'une exception du pare-feu pour TF1810 ...${NC}"
+touch ${firewall_rulepath}
+cat >> "${firewall_rulepath}" << EOF
+table inet filter {
+  chain input {
+    # accept PLC HMI Web server
+	tcp dport 42341 accept
+  }
+}
+
+EOF
+systemctl reload nftables
 
 # Initialise seatd
 echo ""
