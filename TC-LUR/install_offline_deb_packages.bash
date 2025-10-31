@@ -26,6 +26,7 @@ NC='\033[0m' # No colour (reset)
 # Constants
 readonly script_path="$(cd "$(dirname "${0}")" && pwd)"
 readonly working_dir="${script_path}/offline_pkgs_${TIMESTAMP}"
+readonly apt_source_list="/etc/apt/sources.list.d/bhf.list"
 
 # Usage display function
 usage() {
@@ -61,9 +62,23 @@ fi
 # Extract archive contents
 echo ""
 latest_archive=$(ls -t offline_pkgs_*.tar.gz | head -n 1)
-echo -e "${GREEN}Extraction de l'archive : ${MAGENTA}${latest_archive}${NC} ..."
 mkdir -p "${working_dir}"
+echo -e "${GREEN}Extraction de l'archive : ${MAGENTA}${latest_archive}${GREEN} ...${NC}"
 tar -xzf "${latest_archive}" -C "${working_dir}"
+
+# Create repository file hierarchy
+echo ""
+echo -e "${GREEN}Creation de l'arborescence du depot local ...${NC}"
+mkdir -p "${working_dir}/dists/trixie/main/binary-arm64"
+mv "${working_dir}/Packages.gz" "${working_dir}/dists/trixie/main/binary-arm64/Packages.gz"
+
+# Create local repository
+echo ""
+echo -e "${GREEN}Mise en place du depot local ...${NC}"
+cat > "${apt_source_list}" << EOF
+deb [trusted=yes] file:${working_dir} /
+
+EOF
 
 # Initialise apt metadata
 echo ""
@@ -74,9 +89,29 @@ apt-get update -o Dir::Etc::sourcelist="-" -o Dir::Etc::sourceparts="-" -o APT::
 echo ""
 echo -e "${GREEN}Installation des paquets DEB ...${NC}"
 cd "${working_dir}"
-apt-get install -y ./*.deb
+#xargs -a "${working_dir}/pkg_list.txt" apt-get install -y --no-download
+#apt-get install -y ./*.deb
+for deb in ./*.deb; do
+	dpkg -i "$deb" || true
+done
+apt-get install -y -f --no-download ./*.deb || true
+#apt-get -y --fix-broken install --no-download ./*.deb || true
+while dpkg -l | grep -q '^iU'; do
+	echo ""
+    echo -e "${GREEN}Configuration des derniers paquets non configures ...${NC}"
+    dpkg --configure -a
+done
 
 # Delete working directory
 echo ""
 echo -e "${GREEN}Nettoyage des fichiers extraits ...${NC}"
 rm -rf "${working_dir}"
+
+# Return the apt source list to its original state
+echo ""
+echo -e "${GREEN}Suppression du depot local ...${NC}"
+cat > "${apt_source_list}" << EOF
+deb [signed-by=/usr/share/keyrings/bhf.asc] https://deb.beckhoff.com/debian trixie-unstable main
+
+EOF
+apt-get update || true

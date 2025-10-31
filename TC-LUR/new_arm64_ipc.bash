@@ -193,9 +193,11 @@ PACKAGES=(
 gnupg
 dialog
 apt-utils
-tc31-xar-um
+apt-rdepends
+dpkg-dev
 git
 lshw
+tc31-xar-um
 )
 for PACKAGE in "${PACKAGES[@]}"; do
 	echo ""
