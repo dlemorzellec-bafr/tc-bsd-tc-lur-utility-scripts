@@ -111,11 +111,6 @@ echo ""
 echo -e "${GREEN}Vidage du cache d'APT ...${NC}"
 apt-get clean
 
-# Initialisation of TF1810 - PLC HMI Web server by restarting TwinCAT system service
-echo ""
-echo -e "${GREEN}Initialisation du serveur PLC HMI Web ...${NC}"
-systemctl start TcSystemServiceUm.service
-
 # Add firewall rule for TF1810 and reload firewall
 echo ""
 echo -e "${GREEN}Ajout d'une exception du pare-feu pour TF1810 ...${NC}"
@@ -130,6 +125,11 @@ table inet filter {
 
 EOF
 systemctl reload nftables
+
+# Initialisation of TF1810 - PLC HMI Web server by restarting TwinCAT system service
+echo ""
+echo -e "${GREEN}Initialisation du serveur PLC HMI Web ...${NC}"
+systemctl start TcSystemServiceUm.service
 
 # Initialise seatd
 echo ""

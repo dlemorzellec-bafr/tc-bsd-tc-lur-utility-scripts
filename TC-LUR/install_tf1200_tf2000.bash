@@ -34,6 +34,8 @@ readonly tf1200_path="${twincat_functions}/TF1200-UI-Client"
 readonly tf1200_srcpath="${tf1200_path}/scripts"
 readonly tf2000_path="${twincat_functions}/TF2000-HMI-Server"
 
+readonly firewall_rulepath="/etc/nftables.conf.d/70-twincat-hmi.conf"
+
 readonly graph_user="tf1200-user"
 readonly graph_user_path="/home/${graph_user}"
 readonly graph_user_bashrc_path="${graph_user_path}/.bashrc"
@@ -108,6 +110,22 @@ done
 echo ""
 echo -e "${GREEN}Vidage du cache d'APT ...${NC}"
 apt-get clean
+
+# Add firewall rule for TF2000 and reload firewall
+echo ""
+echo -e "${GREEN}Ajout d'une exception du pare-feu pour TF2000 ...${NC}"
+touch ${firewall_rulepath}
+cat >> "${firewall_rulepath}" << EOF
+table inet filter {
+  chain input {
+    # accept TwinCAT HMI server
+	tcp dport 2010 accept
+	tcp dport 2020 accept
+  }
+}
+
+EOF
+systemctl reload nftables
 
 # Initialise TwinCAT HMI server
 echo ""
