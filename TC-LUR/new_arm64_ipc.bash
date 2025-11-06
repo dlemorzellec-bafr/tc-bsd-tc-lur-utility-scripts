@@ -24,8 +24,7 @@ CYAN='\033[1;36m'
 NC='\033[0m' # No colour (reset)
 
 # Constants
-readonly script_version="1.2"
-readonly script_date="2025-10-02"
+readonly script_date="2025-11-06"
 
 readonly twincat_folder="/etc/TwinCAT"
 readonly twincat_functions="${twincat_folder}/Functions"
@@ -33,7 +32,7 @@ readonly twincat_functions="${twincat_folder}/Functions"
 readonly apt_folder="/etc/apt"
 readonly apt_auth_file="${apt_folder}/auth.conf.d/bhf.conf"
 readonly apt_source_list="${apt_folder}/sources.list.d/bhf.list"
-readonly dist_codename="trixie-unstable"
+readonly dist_codename="trixie-stable"
 
 readonly beckhoff_keyring_file="/usr/share/keyrings/bhf.asc"
 readonly beckhoff_repo_url="https://deb.beckhoff.com/debian"
@@ -85,7 +84,7 @@ else
 fi
 
 echo ""
-echo -e "${YELLOW} --- BAFR - Script de configuration de TC/LUR v.${script_version} - ${script_date} --- ${NC}"
+echo -e "${YELLOW} --- BAFR - Script de configuration de TC/LUR - ${script_date} --- ${NC}"
 echo ""
 
 # Create APT auth config

@@ -25,8 +25,20 @@ NC='\033[0m' # No colour (reset)
 
 # Constants
 readonly script_path="$(cd "$(dirname "${0}")" && pwd)"
-readonly working_dir="${script_path}/offline_pkgs_${TIMESTAMP}"
-readonly apt_source_list="/etc/apt/sources.list.d/bhf.list"
+
+readonly apt_folder="/etc/apt"
+readonly apt_auth_file="${apt_folder}/auth.conf.d/bhf.conf"
+readonly apt_source_list="${apt_folder}/sources.list.d/bhf.list"
+readonly apt_mirror_conf="${apt_folder}/mirror.list"
+readonly dist_codename="trixie-stable"
+
+readonly beckhoff_keyring_file="/usr/share/keyrings/bhf.asc"
+readonly beckhoff_repo_url="https://deb.beckhoff.com/debian"
+readonly beckhoff_public_key_url="https://deb.beckhoff.com/repo.pub"
+readonly beckhoff_mirror_parent="/var/spool/apt-mirror"
+readonly beckhoff_mirror_folder="${beckhoff_mirror_parent}/mirror"
+
+readonly localrepo_folder="/srv/localrepo"
 
 # Usage display function
 usage() {
@@ -34,7 +46,9 @@ usage() {
 	echo "USAGE : "
 	echo -e "  ${GREEN}sudo bash ${MAGENTA}$0${NC}"
 	echo ""
-	echo -e "${CYAN}Ce script permet d'installer les paquets hors ligne prealablement telecharges.${NC}"
+	echo -e "${CYAN}Ce script permet d'installer un depot local permettant l'installation de paquets hors ligne depuis une clef USB.${NC}"
+	echo ""
+	echo -e "${YELLOW}Veuillez vous assurer que la clef USB a ete prealablement montee.${NC}"
 	echo ""
 	exit 1
 }
@@ -51,67 +65,33 @@ if [[ "$EUID" -ne 0 ]]; then
 	exit 1
 fi
 
-# Verify presence of archive
-if ! ls offline_pkgs_*.tar.gz >/dev/null 2>&1; then
-	echo -e "${RED}Erreur: L'archive des paquets n'est pas dans le meme dossier que le script${NC}"
-	echo ""
-	usage
+# Verify the mirror exists in expected directory
+MIRROR_FOLDER="deb.beckhoff-mirror"
+found=0
+while read dev mnt rest; do
+    [ -d "$mnt/$MIRROR_FOLDER" ] && found=1 && break
+done < /proc/mounts
+
+if [ "$found" -eq 1 ]; then
+	echo -e "${CYAN}Le miroir a ete detecte a l'emplacement prevu.${NC}"
+else
+	echo -e "${RED}Erreur: Le mirroir n'a pas ete detecte a l'emplacement prevu.${NC}"
 	exit 1
 fi
 
-# Extract archive contents
+# Create the local repository
 echo ""
-latest_archive=$(ls -t offline_pkgs_*.tar.gz | head -n 1)
-mkdir -p "${working_dir}"
-echo -e "${GREEN}Extraction de l'archive : ${MAGENTA}${latest_archive}${GREEN} ...${NC}"
-tar -xzf "${latest_archive}" -C "${working_dir}"
+echo -e "${GREEN}Creation du depot local ...${NC}"
+echo ""
+echo -e "${YELLOW}L'operation peut prendre plusieurs dizaines de minutes.${NC}"
+mkdir -p ${localrepo_folder}
+cp -rfv ${mnt}/${MIRROR_FOLDER} ${localrepo_folder}
 
-# Create repository file hierarchy
+# Change apt source list to point to the local repository
 echo ""
-echo -e "${GREEN}Creation de l'arborescence du depot local ...${NC}"
-mkdir -p "${working_dir}/dists/trixie/main/binary-arm64"
-mv "${working_dir}/Packages.gz" "${working_dir}/dists/trixie/main/binary-arm64/Packages.gz"
-
-# Create local repository
-echo ""
-echo -e "${GREEN}Mise en place du depot local ...${NC}"
+echo -e "${GREEN}Ajustement des depots Beckhoff ...${NC}"
 cat > "${apt_source_list}" << EOF
-deb [trusted=yes] file:${working_dir} /
+deb [trusted=yes] file:${localrepo_folder}/deb.beckhoff-mirror/debian ${dist_codename} main
 
 EOF
-
-# Initialise apt metadata
-echo ""
-echo -e "${GREEN}Initialisation des meta-donnees de apt ...${NC}"
-apt-get update -o Dir::Etc::sourcelist="-" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0" >/dev/null 2>&1 || true
-
-# Install all DEB packages
-echo ""
-echo -e "${GREEN}Installation des paquets DEB ...${NC}"
-cd "${working_dir}"
-#xargs -a "${working_dir}/pkg_list.txt" apt-get install -y --no-download
-#apt-get install -y ./*.deb
-for deb in ./*.deb; do
-	dpkg -i "$deb" || true
-done
-apt-get install -y -f --no-download ./*.deb || true
-#apt-get -y --fix-broken install --no-download ./*.deb || true
-while dpkg -l | grep -q '^iU'; do
-	echo ""
-    echo -e "${GREEN}Configuration des derniers paquets non configures ...${NC}"
-    dpkg --configure -a
-done
-
-# Delete working directory
-echo ""
-echo -e "${GREEN}Nettoyage des fichiers extraits ...${NC}"
-rm -rf "${working_dir}"
-
-# Return the apt source list to its original state
-echo ""
-echo -e "${GREEN}Suppression du depot local ...${NC}"
-cat > "${apt_source_list}" << EOF
-deb [signed-by=/usr/share/keyrings/bhf.asc] https://deb.beckhoff.com/debian trixie-unstable main
-
-EOF
-apt-get update || true
+apt-get update

@@ -24,8 +24,7 @@ CYAN='\033[1;36m'
 NC='\033[0m' # No colour (reset)
 
 # Constants
-readonly script_version="1.1"
-readonly script_date="2025-10-25"
+readonly script_date="2025-11-06"
 readonly script_path="$(cd "$(dirname "${0}")" && pwd)"
 
 readonly twincat_folder="/etc/TwinCAT"

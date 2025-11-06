@@ -25,30 +25,30 @@ NC='\033[0m' # No colour (reset)
 
 # Constants
 readonly script_path="$(cd "$(dirname "${0}")" && pwd)"
-readonly working_dir="${script_path}/pkg_download_${TIMESTAMP}"
-readonly archive_name="offline_pkgs_${TIMESTAMP}.tar.gz"
-readonly apt_source_list="/etc/apt/sources.list.d/bhf.list"
+
+readonly apt_folder="/etc/apt"
+readonly apt_auth_file="${apt_folder}/auth.conf.d/bhf.conf"
+readonly apt_source_list="${apt_folder}/sources.list.d/bhf.list"
+readonly apt_mirror_conf="${apt_folder}/mirror.list"
+readonly dist_codename="trixie-stable"
+
+readonly beckhoff_keyring_file="/usr/share/keyrings/bhf.asc"
+readonly beckhoff_repo_url="https://deb.beckhoff.com/debian"
+readonly beckhoff_public_key_url="https://deb.beckhoff.com/repo.pub"
+readonly beckhoff_mirror_parent="/var/spool/apt-mirror"
+readonly beckhoff_mirror_folder="${beckhoff_mirror_parent}/mirror"
 
 # Usage display function
 usage() {
 	echo ""
 	echo "USAGE : "
-	echo -e "  ${GREEN}sudo bash ${MAGENTA}$0 <paquet(s) a telecharger>  ${NC}"
+	echo -e "  ${GREEN}sudo bash ${MAGENTA}$0${NC}"
 	echo ""
-	echo -e "${CYAN}Ce script permet de telecharger les DEBs des paquets specifies avec leurs dependances.${NC}"
+	echo -e "${CYAN}Ce script permet de telecharger les DEBs des paquets des depots Beckhoff pour une installation ulterieure via un depot local.${NC}"
 	echo ""
 	exit 1
 }
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
-	usage
-	exit 1
-fi
-
-# Needs packages
-PKG_TO_DOWNLOAD=("$@")
-if [[ $# -lt 1 ]]; then
-	echo -e "${RED}Argument(s) necessaire(s) : Paquet(s) a telecharger.${NC}"
-	echo ""
 	usage
 	exit 1
 fi
@@ -72,7 +72,7 @@ fi
 echo ""
 echo -e "${GREEN}Ajustement des depots Beckhoff ...${NC}"
 cat > "${apt_source_list}" << EOF
-deb [signed-by=/usr/share/keyrings/bhf.asc] https://deb.beckhoff.com/debian trixie-unstable main
+deb [signed-by=${beckhoff_keyring_file}] ${beckhoff_repo_url} ${dist_codename} main
 
 EOF
 apt-get update
@@ -81,8 +81,8 @@ apt-get update
 echo ""
 echo -e "${GREEN}Installation de paquets supplementaires ...${NC}"
 PACKAGES=(
-apt-rdepends
-dpkg-dev
+apt-mirror
+rsync
 )
 for PACKAGE in "${PACKAGES[@]}"; do
 	echo ""
@@ -90,54 +90,39 @@ for PACKAGE in "${PACKAGES[@]}"; do
 	apt-get install -y --no-install-recommends "$PACKAGE"
 done
 
-# Identify all package dependencies
+# Configure apt-mirror
 echo ""
-echo -e "${GREEN}Analyse des dependances ...${NC}"
-mkdir -p "${working_dir}"
-cd "${working_dir}"
-apt-rdepends "${PKG_TO_DOWNLOAD[@]}" | grep -v "^ " | grep -v "^Pre" | sort -u > pkg_list.txt
-echo ""
-echo -e "${CYAN}Liste des paquets enregistree dans : ${MAGENTA}${working_dir}/pkg_list.txt${NC}"
+echo -e "${GREEN}Configuration de apt-mirror ...${NC}"
+cat > "${apt_mirror_conf}" << EOF
+############# config ##################
+#
+set base_path    ${beckhoff_mirror_parent}
+#
+# set mirror_path  ''base_path/mirror
+# set skel_path    ''base_path/skel
+# set var_path     ''base_path/var
+# set cleanscript ''var_path/clean.sh
+# set defaultarch  <running host architecture>
+# set postmirror_script ''var_path/postmirror.sh
+# set run_postmirror 0
+set nthreads     20
+set _tilde 0
+#
+############# end config ##############
 
-# Create apt package dependency resolution
-echo ""
-echo -e "${GREEN}Creation du fichier de resolution des dependences pour apt (Packages.gz)${NC}"
-dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
+deb ${beckhoff_repo_url} ${dist_codename} main
 
-# Filter out packages with no candidate in current repositories
-echo ""
-echo -e "${GREEN}Filtrage des paquets non disponibles dans les depots courants ...${NC}"
-> pkg_list_filtered.txt
-while read -r PKG; do
-	# Check if package actually exists in repositories
-	if apt-cache policy "$PKG" | grep -q 'Candidate: (none)'; then
-		echo -e "${YELLOW}W: Paquet ignore (no candidate ou virtuel) : ${PKG}${NC}"
-	else
-		echo "$PKG" >> pkg_list_filtered.txt
-	fi
-done < pkg_list.txt
-mv pkg_list_filtered.txt pkg_list.txt
+clean ${beckhoff_repo_url}
 
-# Download requested packages and all dependencies
-echo ""
-echo -e "${GREEN}Telechargement des paquets specifies ...${NC}"
-echo -e "${CYAN}Les avertissements ${YELLOW}(13: Permission denied)${CYAN} sont normaux et n'empechent pas le telechargement des paquets.${NC}"
-echo -e "${CYAN}  Ils peuvent etre ignores sans risque.${NC}"
-xargs -a pkg_list.txt -r -n 1 apt-get download || true
+EOF
 
-# Compress all these in TAR.GZ archive
+# Run mirror
 echo ""
-echo -e "${GREEN}Compression des paquets dans : ${MAGENTA}${archive_name}${NC}"
-chown -R $SUDO_USER:$SUDO_USER "${working_dir}"
-if ls *.deb >/dev/null 2>&1; then
-	tar -czf "${script_path}/${archive_name}" *.deb pkg_list.txt Packages.gz
-	echo -e "${GREEN}Archive creee avec succes.${NC}"
-else
-	echo -e "${RED}Erreur: Aucun fichier DEB detecte.${NC}"
-	exit 1
-fi
+echo -e "${GREEN}Creation du miroir de paquets dans ${MAGENTA}${beckhoff_mirror_folder}${GREEN} ...${NC}"
+echo ""
+echo -e "${YELLOW}L'operation peut prendre plusieurs dizaines de minutes.${NC}"
+apt-mirror
 
-# Delete working directory
 echo ""
-echo -e "${GREEN}Nettoyage des fichiers extraits : ${MAGENTA}${working_dir} ${GREEN}...${NC}"
-rm -rf "${working_dir}"
+echo -e "${CYAN}Veuillez copier le miroir sur un peripherique amovible en utilisant la commande :${NC}"
+echo -e "${MAGENTA}sudo rsync -av ${beckhoff_mirror_folder}/deb.beckhoff.com/debian <point de montage USB>/deb.beckhoff-mirror/debian${NC}"
