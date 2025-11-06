@@ -1,5 +1,5 @@
 #!/bin/bash
-# SPDX-License-Identifier: 0BSD
+# SPDX-License-Identifier: BSD-2-Clause
 # Dylan Erwan Le Morzellec (BECKHOFF Automation France SARL)
 # The script is provided AS IS and its behaviour is not warranted
 
