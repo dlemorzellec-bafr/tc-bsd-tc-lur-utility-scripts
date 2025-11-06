@@ -37,14 +37,15 @@ It is assumed for each script to be executed in `/home/Administrator` :
 - [x] TF6250 Modbus/TCP Installation and configuration script
 - [x] Static IP Setter script
 - [x] Automount removable devices script
-- [x] DEB Packages download script
-	- [x] Offline DEB packages install script
+- [x] Package mirror download script
+	- [x] Package offline local repository setup script
 - [ ] Docker installation script with TwinCAT XAR container deployment 
 - [ ] ... Possibly more to come (including offline versions)
 
 These are not official Beckhoff material.
 
 ---
+# Scripts pour TwinCAT/BSD & TwinCAT/Linux
 Voici plusieurs scripts utiles pour les systèmes d'exploitation de Beckhoff TC/BSD et TC/LUR pour l'installation et la configuration de fonctions TwinCAT.
 Il est supposé que chaque script est exécuté dans le dossier `/home/Administrator` :
 
@@ -81,8 +82,8 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
 - [x] Script d'installation et de configuration pour TF6250 Modbus/TCP
 - [x] Script d'affectation d'une adresse IP fixe
 - [x] Script d'activation du montage automatique des périphériques amovibles
-- [x] Script de téléchargement de paquets au format DEB
-	- [x] Script d'installation hors-ligne de paquets DEB
+- [x] Script de téléchargement d'un miroir des dépôts de paquets
+	- [x] Script d'installation d'un dépôt hors-ligne pour l'installation de paquets
 - [ ] Script pour l'installation de Docker et le déploiement d'un conteneur TwinCAT XAR 
 - [ ] ... Potentiellement davantage à venir (y compris des versions hors-ligne)
 
