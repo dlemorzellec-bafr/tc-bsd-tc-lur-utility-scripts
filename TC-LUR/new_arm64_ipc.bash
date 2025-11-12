@@ -24,19 +24,27 @@ CYAN='\033[1;36m'
 NC='\033[0m' # No colour (reset)
 
 # Constants
-readonly script_date="2025-11-06"
+readonly script_date="2025-11-12"
 
 readonly twincat_folder="/etc/TwinCAT"
 readonly twincat_functions="${twincat_folder}/Functions"
 
 readonly apt_folder="/etc/apt"
 readonly apt_auth_file="${apt_folder}/auth.conf.d/bhf.conf"
-readonly apt_source_list="${apt_folder}/sources.list.d/bhf.list"
-readonly dist_codename="trixie-stable"
+
+readonly beckhoff_source_list="${apt_folder}/sources.list.d/bhf.list"
+readonly debian_sources_list="${apt_folder}/sources.list"
+
+readonly dist_version="trixie"
+readonly dist_codename="${dist_version}-stable"
+readonly dist_security="${dist_version}-security"
 
 readonly beckhoff_keyring_file="/usr/share/keyrings/bhf.asc"
 readonly beckhoff_repo_url="https://deb.beckhoff.com/debian"
 readonly beckhoff_public_key_url="https://deb.beckhoff.com/repo.pub"
+
+readonly debian_mirror_url="https://deb-mirror.beckhoff.com/debian"
+readonly debian_mirror_security_url="https://deb-mirror.beckhoff.com/debian-security"
 
 readonly etc_keyboard_conf="/etc/default/keyboard"
 
@@ -107,11 +115,16 @@ chmod 600 "$apt_auth_file"
 # Add Beckhoff APT repositories
 echo ""
 echo -e "${GREEN}Ajustement des depots Beckhoff ...${NC}"
-mkdir -p "$(dirname "$apt_source_list")"
-rm -f "${apt_source_list}"
-touch "${apt_source_list}"
-cat >> "${apt_source_list}" << EOF
+mkdir -p "$(dirname "$beckhoff_source_list")"
+rm -f "${beckhoff_source_list}"
+touch "${beckhoff_source_list}"
+cat >> "${beckhoff_source_list}" << EOF
 deb [signed-by=${beckhoff_keyring_file}] ${beckhoff_repo_url} ${dist_codename} main
+
+EOF
+cat > "${debian_sources_list}" << EOF
+deb ${debian_mirror_url} ${dist_version} main contrib non-free non-free-firmware
+deb ${debian_mirror_security_url} ${dist_security} main contrib non-free non-free-firmware
 
 EOF
 
