@@ -100,7 +100,7 @@ echo ""
 echo -e "${GREEN}Creation du fichier d'authentification pour APT ...${NC}"
 mkdir -p "$(dirname "$apt_auth_file")"
 touch "${apt_auth_file}"
-cat >> "${apt_auth_file}" << EOF
+cat > "${apt_auth_file}" << EOF
 machine deb.beckhoff.com
 login $EMAIL
 password $PASSWORD
