@@ -3,15 +3,15 @@
 # Dylan Erwan Le Morzellec (BECKHOFF Automation France SARL)
 # The script is provided AS IS and its behaviour is not warranted
 
-# Script to set up the TF2000 TwinCAT HMI Server
+# Script to set up the TF6100 OPC UA Server
 
 set -eu -o pipefail
 
 # Logging script return
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
-LOG_FILE="/var/log/bafr_tf2000_setup_${TIMESTAMP}.log"
+LOG_FILE="/var/log/bafr_tf6100_setup_${TIMESTAMP}.log"
 if ! touch "$LOG_FILE" 2>/dev/null; then
-	LOG_FILE="/tmp/bafr_tf2000_setup_${TIMESTAMP}.log"
+	LOG_FILE="/tmp/bafr_tf6100_setup_${TIMESTAMP}.log"
 fi
 exec > >(tee -a "$LOG_FILE") 2>&1
 
@@ -29,19 +29,17 @@ readonly script_path="$(cd "$(dirname "${0}")" && pwd)"
 
 readonly twincat_folder="/etc/TwinCAT"
 readonly twincat_functions="${twincat_folder}/Functions"
-readonly tf2000_path="${twincat_functions}/TF2000-HMI-Server"
+readonly tf6100_path="${twincat_functions}/TF6100-OPC-UA"
 
-readonly firewall_rulepath="/etc/nftables.conf.d/70-twincat-hmi.conf"
+readonly firewall_rulepath="/etc/nftables.conf.d/60-opc-ua.conf"
 
 # Usage display function
 usage() {
 	echo ""
 	echo "USAGE : "
-	echo -e "  ${GREEN}sudo bash ${MAGENTA}$0 <mot de passe pour TF1200-TF2000>${NC}"
-	echo "   OU "
-	echo -e "  ${GREEN}sudo bash ${MAGENTA}$0${NC}     (Un mot de passe pour TwinCAT HMI vous sera demande)"
+	echo -e "  ${GREEN}sudo bash ${MAGENTA}$0${NC}"
 	echo ""
-	echo -e "${CYAN}Ce script permet l'installation et la configuration TF2000.${NC}"
+	echo -e "${CYAN}Ce script permet l'installation et la configuration de TF6100.${NC}"
 	exit 1
 }
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
@@ -63,22 +61,11 @@ if ! ping -c 1 -W 2 deb.beckhoff.com >/dev/null; then
 	exit 1
 fi
 
-# Collect credentials
-if [ "$#" -eq 1 ]; then
-	HMI_PASSWORD="$1"
-elif [ "$#" -eq 0 ]; then
-	read -rsp "Entrez le mot de passe pour TwinCAT HMI : " HMI_PASSWORD
-	echo
-else
-	usage
-	exit 1
-fi
-
 # Install needed packages (to edit as needed)
 echo ""
 echo -e "${GREEN}Installation de paquets supplementaires ...${NC}"
 PACKAGES=(
-tf2000-hmi-server
+tf6100-opc-ua-server
 )
 for PACKAGE in "${PACKAGES[@]}"; do
 	echo ""
@@ -98,19 +85,14 @@ touch ${firewall_rulepath}
 cat >> "${firewall_rulepath}" << EOF
 table inet filter {
   chain input {
-    # accept TwinCAT HMI server
-	tcp dport 2010 accept
-	tcp dport 2020 accept
+    # accept OPC UA
+	tcp dport 4840 accept
+	tcp dport 48050 accept
+	# accept OPC DA (deprecated)
+	#tcp dport 1024-65535 accept
   }
 }
 
 EOF
 systemctl reload nftables
 
-# Initialise TwinCAT HMI server
-echo ""
-echo -e "${GREEN}Initialisation du serveur TwinCAT HMI ...${NC}"
-TcHmiSrv --initialize --password="${HMI_PASSWORD}"
-
-systemctl enable --now TcHmiSrv.service
-systemctl start TcHmiSrv.service

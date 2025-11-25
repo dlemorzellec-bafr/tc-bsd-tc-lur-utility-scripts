@@ -9,9 +9,9 @@ set -eu -o pipefail
 
 # Logging script return
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
-LOG_FILE="/var/log/setup_modbus_tcp_${TIMESTAMP}.log"
+LOG_FILE="/var/log/bafr_tf6250_setup_${TIMESTAMP}.log"
 if ! touch "$LOG_FILE" 2>/dev/null; then
-	LOG_FILE="/tmp/setup_modbus_tcp_${TIMESTAMP}.log"
+	LOG_FILE="/tmp/bafr_tf6250_setup_${TIMESTAMP}.log"
 fi
 exec > >(tee -a "$LOG_FILE") 2>&1
 
