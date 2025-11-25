@@ -87,6 +87,7 @@ table inet filter {
   chain input {
     # accept OPC UA
 	tcp dport 4840 accept
+	tcp dport 4852 accept
 	tcp dport 48050 accept
 	# accept OPC DA (deprecated)
 	#tcp dport 1024-65535 accept
