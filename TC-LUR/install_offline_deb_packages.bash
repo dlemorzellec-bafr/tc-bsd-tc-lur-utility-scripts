@@ -76,6 +76,7 @@ if [ "$found" -eq 1 ]; then
 	echo -e "${CYAN}Le miroir a ete detecte a l'emplacement prevu.${NC}"
 else
 	echo -e "${RED}Erreur: Le mirroir n'a pas ete detecte a l'emplacement prevu.${NC}"
+	usage
 	exit 1
 fi
 

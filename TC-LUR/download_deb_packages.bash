@@ -44,7 +44,7 @@ usage() {
 	echo "USAGE : "
 	echo -e "  ${GREEN}sudo bash ${MAGENTA}$0${NC}"
 	echo ""
-	echo -e "${CYAN}Ce script permet de telecharger les DEBs des paquets des depots Beckhoff pour une installation ulterieure via un depot local.${NC}"
+	echo -e "${CYAN}Ce script permet de telecharger les DEBs des paquets du depot Beckhoff pour une installation ulterieure via un depot local.${NC}"
 	echo ""
 	exit 1
 }
@@ -125,4 +125,4 @@ apt-mirror
 
 echo ""
 echo -e "${CYAN}Veuillez copier le miroir sur un peripherique amovible en utilisant la commande :${NC}"
-echo -e "${MAGENTA}sudo rsync -av ${beckhoff_mirror_folder}/deb.beckhoff.com/debian <point de montage USB>/deb.beckhoff-mirror/debian${NC}"
+echo -e "${MAGENTA}sudo rsync -av ${beckhoff_mirror_folder}/deb.beckhoff.com/debian <point de montage USB>/deb.beckhoff-mirror${NC}"
