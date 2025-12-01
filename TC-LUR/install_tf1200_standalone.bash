@@ -183,12 +183,16 @@ output * bg ${tf1200_srcpath}/backgrounds/tclinux_1366x768.png center #FFFFFF
 #
 # Example configuration:
 #
-#   output HDMI-A-1 resolution 1920x1080 position 1920,0
+#	output HDMI-A-1 resolution 1920x1080 position 0,0    # Left screen
+#   output HDMI-A-2 resolution 1920x1080 position 1920,0    # Right screen
 #
 # You can get the names of your outputs by running: swaymsg -t get_outputs
 #
 # Add definition of a font for display and avoid tofu	# EDIT BAFR (Correctif Bug Caracteres)
 font pango:DejaVu Sans Mono 10
+
+# Display default configuration
+output DP-1 resolution 1920x1080 position 0,0    # EDIT BAFR (force 1920x1080)
 
 ### Idle configuration
 #
