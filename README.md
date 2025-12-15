@@ -26,6 +26,7 @@ It is assumed for each script to be executed in `/home/Administrator` :
 	- [x] With TF1810 PLC HMI Web 
 - [x] TF2000 TwinCAT HMI 1.12 Standalone Installation script
 - [x] TF2000 TwinCAT HMI 1.14 Standalone Installation script
+- [x] TF1810 PLC HMI Web Standalone Installation script
 - [x] TF6250 Modbus/TCP Installation and configuration script
 - [x] eGalax Touchscreen support script
 - [ ] ... Possibly more to come (including offline versions)
@@ -37,6 +38,7 @@ It is assumed for each script to be executed in `/home/Administrator` :
 	- [x] With TF2000 TwinCAT HMI 1.14
 	- [x] With TF1810 PLC HMI Web
 - [x] TF2000 TwinCAT HMI Standalone Installation script
+- [x] TF1810 PLC HMI Web Standalone Installation script
 - [x] TF6100 OPC UA Installation script
 - [x] TF6250 Modbus/TCP Installation and configuration script
 - [x] Static IP Setter script
@@ -76,6 +78,7 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
 	- [x] Avec TF1810 PLC HMI Web 
 - [x] Script d'installation pour TF2000 TwinCAT HMI 1.12
 - [x] Script d'installation pour TF2000 TwinCAT HMI 1.14
+- [x] Script d'installation pour TF1810 PLC HMI Web
 - [x] Script d'installation et de configuration pour TF6250 Modbus/TCP
 - [x] Script d'activation du support pour écran tactile eGalax
 - [ ] ... Potentiellement davantage à venir (y compris des versions hors-ligne)
@@ -87,6 +90,7 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
 	- [x] Avec TF2000 TwinCAT HMI 1.14
 	- [x] Avec TF1810 PLC HMI Web
 - [x] Script d'installation pour TF2000 TwinCAT HMI 1.14
+- [x] Script d'installation pour TF1810 PLC HMI Web
 - [x] Script d'installation pour TF6100 OPC UA
 - [x] Script d'installation et de configuration pour TF6250 Modbus/TCP
 - [x] Script d'affectation d'une adresse IP fixe
