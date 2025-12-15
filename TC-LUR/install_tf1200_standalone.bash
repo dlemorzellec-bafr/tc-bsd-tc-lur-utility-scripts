@@ -191,8 +191,8 @@ output * bg ${tf1200_srcpath}/backgrounds/tclinux_1366x768.png center #FFFFFF
 # Add definition of a font for display and avoid tofu	# EDIT BAFR (Correctif Bug Caracteres)
 font pango:DejaVu Sans Mono 10
 
-# Display default configuration
-output DP-1 resolution 1920x1080 position 0,0    # EDIT BAFR (force 1920x1080)
+# Display default configuration    # EDIT BAFR (force 1920x1080)
+output DP-1 resolution 1920x1080 position 0,0
 
 ### Idle configuration
 #
@@ -221,6 +221,18 @@ output DP-1 resolution 1920x1080 position 0,0    # EDIT BAFR (force 1920x1080)
 # You can get the names of your inputs by running: swaymsg -t get_inputs
 # Read  "man 5 sway-input"  for more information about this section.
 #
+
+# Inputs default configuration		# EDIT BAFR (force basic generic mouse and touchpad configurations)
+input type:pointer {
+	accel_profile flat
+	pointer_accel 0.00
+}
+input type:touchpad {
+	dwt enabled
+	tap enabled
+	natural_scroll enabled
+}
+
 # Set files of rules to be used for keyboard mapping composition.
 input * xkb_rules evdev
 #
@@ -458,7 +470,7 @@ cat >> "${tf1200_userconfig}/config.json" << EOF
     "allowResize": true,
     "autoUpdateConfig": true,
     "commandLineSwitches": ["ignore-certificate-errors"],
-    "configVersion": "1.9",
+    "configVersion": "1.10",
     "defaultTheme": "",
     "enableDevTools": true,
     "enableIncognitoMode": true,
@@ -467,6 +479,9 @@ cat >> "${tf1200_userconfig}/config.json" << EOF
     "extensions": {},
     "historyGoBackKeys": "Alt+Left",
     "historyGoForwardKeys": "Alt+Right",
+	"ignoreErrorCodes": [
+		-3
+	],
     "maxVisualZoomLevelLimit": 1,
     "openDevTools": false,
     "persistPosition": true,
