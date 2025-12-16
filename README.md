@@ -42,6 +42,7 @@ It is assumed for each script to be executed in `/home/Administrator` :
 - [x] TF6100 OPC UA Installation script
 - [x] TF6250 Modbus/TCP Installation and configuration script
 - [x] Static IP Setter script
+- [x] AMS NetId Setter script
 - [x] Automount removable devices script
 - [x] Package mirror download script
 	- [x] Package offline local repository setup script
@@ -94,6 +95,7 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
 - [x] Script d'installation pour TF6100 OPC UA
 - [x] Script d'installation et de configuration pour TF6250 Modbus/TCP
 - [x] Script d'affectation d'une adresse IP fixe
+- [x] Script de réaffectation de l'adresse AMS NetId
 - [x] Script d'activation du montage automatique des périphériques amovibles
 - [x] Script de téléchargement d'un miroir des dépôts de paquets
 	- [x] Script d'installation d'un dépôt hors-ligne pour l'installation de paquets
