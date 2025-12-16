@@ -48,12 +48,6 @@ if [[ "$EUID" -ne 0 ]]; then
 	exit 1
 fi
 
-# Check if AMS NetId format is valid
-if ! [[ "$AMSNETID" =~ ^([0-9]{1,3}\.){5}[0-9]{1,3}$ ]]; then
-    echo -e "${RED}L'adresse AMS NetId n'est pas valide. Format attendu : X.X.X.X.X.X${NC}"
-    exit 1
-fi
-
 # Collect credentials
 if [ "$#" -eq 1 ]; then
 	AMSNETID="$1"
@@ -65,6 +59,12 @@ else
 	echo ""
 	usage
 	exit 1
+fi
+
+# Check if AMS NetId format is valid
+if ! [[ "$AMSNETID" =~ ^([0-9]{1,3}\.){5}[0-9]{1,3}$ ]]; then
+    echo -e "${RED}L'adresse AMS NetId n'est pas valide. Format attendu : X.X.X.X.X.X${NC}"
+    exit 1
 fi
 
 # Constants
