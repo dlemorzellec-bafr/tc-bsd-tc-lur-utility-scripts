@@ -251,11 +251,20 @@ output DP-1 resolution 1920x1080 position 0,0
 #
 
 # Inputs default configuration		# EDIT BAFR (force basic generic mouse and touchpad configurations)
+# Mouse configuration
 input type:pointer {
 	accel_profile flat
 	pointer_accel 0.00
+	natural_scroll enabled
 }
+# Touchpad configuration
 input type:touchpad {
+	dwt enabled
+	tap enabled
+	natural_scroll enabled
+}
+# Touchscreen configuration
+input "type:touch" {
 	dwt enabled
 	tap enabled
 	natural_scroll enabled
