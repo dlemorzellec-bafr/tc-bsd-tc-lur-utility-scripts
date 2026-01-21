@@ -82,8 +82,8 @@ ams_to_hexa() {
 	echo "$HEX_VALUE"
 }
 
-# Force TwinCAT to switch to CONFIG mode
-TcSystemServiceUm -c /var/run/TcSystemServiceUm.pid
+# Force TwinCAT to switch to CONFIG mode (normally not necessary)
+#TcSystemServiceUm -c /var/run/TcSystemServiceUm.pid
 
 # Replace hexadecimal value of the AMS NetId in the TwinCAT registry
 sed -i "/<Value Name=\"AmsNetId\"/s|>[^<]*<|>$(ams_to_hexa "$AMSNETID")<|" ${twincat_registry}
