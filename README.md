@@ -47,6 +47,7 @@ It is assumed for each script to be executed in `/home/Administrator` :
 - [x] Package mirror download script
 	- [x] Package offline local repository setup script
 - [x] Beckhoff Wifi dongle (CU8210-D001-01xx) configuration script
+- [x] System backup script
 - [ ] Docker installation script with TwinCAT XAR container deployment 
 - [ ] ... Possibly more to come (including offline versions)
 
@@ -100,6 +101,7 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
 - [x] Script de téléchargement d'un miroir des dépôts de paquets
 	- [x] Script d'installation d'un dépôt hors-ligne pour l'installation de paquets
 - [x] Script de configuration pour la clef Wifi Beckhoff (CU8210-D001-01xx)
+- [x] Script de sauvegarde du système
 - [ ] Script pour l'installation de Docker et le déploiement d'un conteneur TwinCAT XAR 
 - [ ] ... Potentiellement davantage à venir (y compris des versions hors-ligne)
 

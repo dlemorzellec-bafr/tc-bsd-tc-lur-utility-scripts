@@ -58,14 +58,14 @@ if [[ "$EUID" -ne 0 ]]; then
 fi
 
 # Verify internet connection to deb.beckhoff.com
-echo "Verification de l'acces reseau a deb.beckhoff.com ..."
+echo "${GREEN}Verification de l'acces reseau a deb.beckhoff.com ...${NC}"
 if ! ping -c 1 -W 2 deb.beckhoff.com >/dev/null; then
 	echo -e "${RED}Erreur : Acces reseau a deb.beckhoff.com impossible. Verifiez la connectivite.${NC}"
 	exit 1
 fi
 
 # Verify internet connection to github.com
-echo "Verification de l'acces reseau a github.com ..."
+echo "${GREEN}Verification de l'acces reseau a github.com ...${NC}"
 if ! ping -c 1 -W 2 github.com >/dev/null; then
 	echo -e "${RED}Erreur : Acces reseau a github.com impossible. Verifiez la connectivite.${NC}"
 	exit 1
