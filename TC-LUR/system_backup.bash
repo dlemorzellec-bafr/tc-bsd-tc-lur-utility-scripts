@@ -24,7 +24,7 @@ CYAN='\033[1;36m'
 NC='\033[0m' # No colour (reset)
 
 # Constants
-readonly script_date="2026-01-29"
+readonly script_date="2026-01-30"
 readonly script_path="$(cd "$(dirname "${0}")" && pwd)"
 
 readonly image_name="cx_backup_${TIMESTAMP}.img.zst"
@@ -55,27 +55,47 @@ if [[ "$EUID" -ne 0 ]]; then
 	exit 1
 fi
 
-# Verify internet connection to deb.beckhoff.com
-echo "Verification de l'acces reseau a deb.beckhoff.com ..."
-if ! ping -c 1 -W 2 deb.beckhoff.com >/dev/null; then
-	echo -e "${RED}Erreur : acces reseau a deb.beckhoff.com impossible. Verifiez la connectivite.${NC}"
-	exit 1
-fi
+# Remount boot EFI partition anyway if something went wrong
+cleanup() {
+    if mountpoint -q "/boot/efi"; then
+        mount -o remount,rw "/boot/efi" 2>/dev/null || true
+    fi
+}
+trap cleanup EXIT INT TERM
 
-# Install needed packages
-echo ""
-echo -e "${GREEN}Installation de paquets supplementaires ...${NC}"
-PACKAGES=(
-fdisk
-ntfs-3g
-zstd
-original-awk
-)
-for PACKAGE in "${PACKAGES[@]}"; do
-	echo ""
-	echo -e "${GREEN}Installation de $PACKAGE ...${NC}"
-	apt-get install -y --no-install-recommends "$PACKAGE"
+# Required commands (not packages)
+REQUIRED_CMDS="lsblk findmnt awk zstd dd truncate df mountpoint"
+
+MISSING_CMDS=""
+for cmd in $REQUIRED_CMDS; do
+    command -v "$cmd" >/dev/null 2>&1 || MISSING_CMDS="$MISSING_CMDS $cmd"
 done
+
+# If needed packages are not installed, the network connection is required
+if [[ -n "$MISSING_CMDS" ]]; then
+	# Verify internet connection to deb.beckhoff.com
+	echo -e "${YELLOW}W: commandes necessaires manquantes:${MAGENTA}${MISSING_CMDS}${NC}"
+	echo "${GREEN}Verification de l'acces reseau a deb.beckhoff.com ...${NC}"
+	if ! ping -c 1 -W 2 deb.beckhoff.com >/dev/null; then
+		echo -e "${RED}Erreur : acces reseau a deb.beckhoff.com impossible. Verifiez la connectivite.${NC}"
+		exit 1
+	fi
+
+	# Install needed packages if they are not available
+	echo ""
+	echo -e "${GREEN}Installation de paquets supplementaires ...${NC}"
+	PACKAGES=(
+	fdisk
+	ntfs-3g
+	zstd
+	original-awk
+	)
+	for PACKAGE in "${PACKAGES[@]}"; do
+		echo ""
+		echo -e "${GREEN}Installation de $PACKAGE ...${NC}"
+		apt-get install -y --no-install-recommends "$PACKAGE"
+	done
+fi
 
 # Identification of root disk (to avoid imaging anything else)
 echo ""
@@ -105,11 +125,6 @@ if [[ "${USB_DISK}" == "${ROOT_DISK}" ]]; then
 	exit 1
 fi
 
-if mount | grep -q " on ${ROOT_DISK}"; then
-    echo -e "${RED}Erreur : tentative d'imagerie d'un disque monte.${NC}"
-    exit 1
-fi
-
 # Verify available space and writability on the USB device
 echo ""
 echo -e "${GREEN}Verification de l'espace disponible sur le support USB ...${NC}"
@@ -133,13 +148,6 @@ truncate -s 6G "${USB_MOUNT}/.test.img" || {
 }
 rm -f "${USB_MOUNT}/.test.img"
 
-
-# Create a BTRFS system snapshot (not needed)
-#echo ""
-#echo -e "${GREEN}Creation d'un point de restauration BTRFS ...${NC}"
-#btrfs subvolume snapshot -r / /.backup-root-snap
-#btrfs subvolume list /
-
 # Ensure system quiescence to avoid errors during backup
 echo ""
 echo -e "${GREEN}Preparation du systeme (Limitation des operations d'ecriture) ...${NC}"
@@ -159,23 +167,27 @@ echo -e "${RED}Attention : ${YELLOW}Veuillez ne pas utiliser ou interrompre le P
 # Backup root disk to image
 echo ""
 echo -e "${GREEN}Creation de l'image du disque systeme ...${NC}"
-echo -e "${YELLOW}L'operation peut prendre plusieurs heures !${NC}"
 
-# fullblock = avoid sparse imaging, -19 = max compression, -T1 = single CPU thread (to limit system load)
-dd if="${ROOT_DISK}" bs=1M iflag=fullblock status=progress | zstd -19 -T1 > "${USB_MOUNT}/${image_name}" || {
-    echo -e "${RED}Erreur : la creation de l'image a echoue.${NC}"
-    exit 1
-}
+if [[ ! "${1:-}" == "--dry-run" ]]; then
+	echo -e "${YELLOW}L'operation peut prendre plusieurs heures !${NC}"
+	# fullblock = avoid sparse imaging, -19 = max compression, -T1 = single CPU thread (to limit system load)
+	dd if="${ROOT_DISK}" bs=1M iflag=fullblock status=progress | zstd -19 -T1 > "${USB_MOUNT}/${image_name}" || {
+		echo -e "${RED}Erreur : la creation de l'image a echoue.${NC}"
+		exit 1
+	}
+	echo -e "${CYAN}Operation terminee.${NC}"
+	ls -lh "${USB_MOUNT}/${image_name}"
 
-echo -e "${CYAN}Operation terminee.${NC}"
-ls -lh "${USB_MOUNT}/${image_name}"
+	# Verify image integrity
+	echo ""
+	echo -e "${GREEN}Verification de l'integrite du fichier image ...${NC}"
+	zstd -t "${USB_MOUNT}/${image_name}"
+	echo -e "${CYAN}Verification terminee.${NC}"
 
-# Verify image integrity
-echo ""
-echo -e "${GREEN}Verification de l'integrite du fichier image ...${NC}"
-zstd -t "${USB_MOUNT}/${image_name}"
-
-echo -e "${CYAN}Verification terminee.${NC}"
+# Test mode for debug purposes
+else
+	echo -e "${YELLOW}Mode de test. Aucune image n'est realisee.${NC}"
+fi
 
 # Remount boot EFI partition to read-write
 echo ""
@@ -183,11 +195,3 @@ if [[ "$EFI_REMOUNTED" -eq 1 ]]; then
     echo -e "${GREEN}Remontage de /boot/efi ...${NC}"
     mount -o remount,rw "/boot/efi" || echo -e "${YELLOW}W: Echec du remontage de ${MAGENTA}/boot/efi${NC}"
 fi
-
-# Do it anyway if something went wrong
-cleanup() {
-    if mountpoint -q "/boot/efi"; then
-        mount -o remount,rw "/boot/efi" 2>/dev/null || true
-    fi
-}
-trap cleanup EXIT INT TERM
