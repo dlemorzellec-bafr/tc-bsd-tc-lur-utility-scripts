@@ -8,13 +8,13 @@ It is assumed for each script to be executed in `/home/Administrator` :
 
     cd
     doas chmod +x <name of script>.sh
-    doas sh <name of script>.sh
+    doas ~/<name of script>.sh
 
 **For TC/LUR :**
 
     cd
     sudo chmod +x <name of script>.bash
-    sudo bash <name of script>.bash
+    sudo ~/<name of script>.bash
 
 ## Roadmap
 
@@ -62,13 +62,13 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
 
     cd
     doas chmod +x <nom du script>.sh
-    doas sh <nom du script>.sh
+    doas ~/<nom du script>.sh
 
 **Pour TC/LUR :**
 
     cd
     sudo chmod +x <nom du script>.bash
-    sudo bash <nom du script>.bash
+    sudo ~/<nom du script>.bash
 
 ## Feuille de route
 
