@@ -24,7 +24,7 @@ CYAN='\033[1;36m'
 NC='\033[0m' # No colour (reset)
 
 # Constants
-readonly script_date="2026-01-30"
+readonly script_date="2026-02-09"
 readonly script_path="$(cd "$(dirname "${0}")" && pwd)"
 
 readonly image_name="cx_backup_${TIMESTAMP}.img.zst"
@@ -75,7 +75,7 @@ done
 if [[ -n "$MISSING_CMDS" ]]; then
 	# Verify internet connection to deb.beckhoff.com
 	echo -e "${YELLOW}W: commandes necessaires manquantes:${MAGENTA}${MISSING_CMDS}${NC}"
-	echo "${GREEN}Verification de l'acces reseau a deb.beckhoff.com ...${NC}"
+	echo -e "${GREEN}Verification de l'acces reseau a deb.beckhoff.com ...${NC}"
 	if ! ping -c 1 -W 2 deb.beckhoff.com >/dev/null; then
 		echo -e "${RED}Erreur : acces reseau a deb.beckhoff.com impossible. Verifiez la connectivite.${NC}"
 		exit 1
@@ -89,6 +89,7 @@ if [[ -n "$MISSING_CMDS" ]]; then
 	ntfs-3g
 	zstd
 	original-awk
+	lshw
 	)
 	for PACKAGE in "${PACKAGES[@]}"; do
 		echo ""
