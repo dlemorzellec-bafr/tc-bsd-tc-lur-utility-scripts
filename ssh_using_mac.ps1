@@ -15,7 +15,7 @@ function Get-ActiveInterfaceIndex {
         Where-Object { $_.Status -eq "Up" -and $_.HardwareInterface -eq $true } |
         Select-Object -First 1
 
-    if (-not $adapter) { throw "Aucune interface reseau active trouvee." }
+    if (-not $adapter) { throw "Erreur : Aucune interface reseau active trouvee." }
 
     # Get the interface index
     $ifaceIndex = (Get-NetIPInterface -InterfaceAlias $adapter.InterfaceAlias -AddressFamily IPv6).InterfaceIndex | Select-Object -First 1
@@ -27,7 +27,7 @@ function Get-LinkLocalIPv6FromMac {
 
     $mac = $MacAddress -replace '[-:]',''
     if ($mac.Length -ne 12) {
-        throw "Adresse MAC invalide."
+        throw "Erreur : Adresse MAC invalide."
     }
 
     $firstByte = [Convert]::ToByte($mac.Substring(0,2),16)
@@ -48,26 +48,26 @@ function Get-LinkLocalIPv6FromMac {
 }
 
 # INPUT : MAC address
-$mac = Read-Host "Entrez l'adresse MAC de la machine Debian"
+$mac = Read-Host "Veuillez entrer l'adresse MAC du PC distant "
 if ([string]::IsNullOrWhiteSpace($mac)) { exit 1 }
 
 # Network interface
 try {
     $ifaceIndex = Get-ActiveInterfaceIndex
-    Write-Host "Interface détectée automatiquement : $iface" -ForegroundColor Cyan
+    Write-Host "Interface detectee automatiquement : $ifaceIndex" -ForegroundColor Cyan
 } catch {
     Write-Host $_ -ForegroundColor Red
     exit 1
 }
 
 # User (Administrator as default)
-$user = Read-Host "Login SSH (default: Administrator)"
+$user = Read-Host "Login SSH (vide = Administrator) "
 if ([string]::IsNullOrWhiteSpace($user)) {
     $user = "Administrator"
 }
 
 # Port (22 as default)
-$portInput = Read-Host "Port SSH (vide = 22)"
+$portInput = Read-Host "Port SSH (vide = 22) "
 $port = if ($portInput) { [int]$portInput } else { 22 }
 
 try {
@@ -80,6 +80,6 @@ try {
 $target = "$ipv6%$ifaceIndex"
 $sshCmd = "ssh -6 -p $port $user@$target"
 
-Write-Host "Connexion à $target" -ForegroundColor Green
+Write-Host "Connexion a $target ..." -ForegroundColor Green
 
 Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", $sshCmd

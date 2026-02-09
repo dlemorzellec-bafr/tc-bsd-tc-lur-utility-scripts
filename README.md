@@ -15,8 +15,16 @@ It is assumed for each script to be executed in `/home/Administrator` :
     cd
     sudo chmod +x <name of script>.bash
     sudo ~/<name of script>.bash
+    
+**For SSH connection script :**
+	
+	Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+	<script path>/ssh_using_mac.ps1
 
 ## Roadmap
+
+###
+- [x] Windows-side Powershell script to connect via SSH using MAC Address
 
 ### TwinCAT/BSD
 - [x] TF1200 and Sway Installation and configuration script
@@ -30,9 +38,6 @@ It is assumed for each script to be executed in `/home/Administrator` :
 - [x] TF6250 Modbus/TCP Installation and configuration script
 - [x] eGalax Touchscreen support script
 - [ ] ... Possibly more to come (including offline versions)
-
-###
-- [x] Windows-side Powershell script to connect via SSH using MAC Address
 
 ### TwinCAT/LUR
 - [x] Beckhoff IPC configuration script (with apt authentication and TwinCAT XAR installation)
@@ -73,7 +78,15 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
     sudo chmod +x <nom du script>.bash
     sudo ~/<nom du script>.bash
 
+**Pour le script de connexion SSH :**
+	
+	Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+	<script path>/ssh_using_mac.ps1
+
 ## Feuille de route
+
+###
+- [x] Script Powershell (Windows) pour se connecter à Linux en SSH avec l'adresse MAC du PC
 
 ### TwinCAT/BSD
 - [x] Script d'installation et de configuration pour TF1200 et Sway
@@ -87,9 +100,6 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
 - [x] Script d'installation et de configuration pour TF6250 Modbus/TCP
 - [x] Script d'activation du support pour écran tactile eGalax
 - [ ] ... Potentiellement davantage à venir (y compris des versions hors-ligne)
-
-###
-- [x] Script Powershell (Windows) pour se connecter à Linux en SSH avec l'adresse MAC du PC
 
 ### TwinCAT/LUR
 - [x] Script de configuration de l'IPC Beckhoff (authentification pour apt, installation de TwinCAT XAR, clavier en français, heure de Paris)
