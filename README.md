@@ -1,4 +1,4 @@
-# TwinCAT/BSD & TwinCAT/Linux Scripts
+# TwinCAT/BSD & TwinCAT/RT Linux Scripts
 *(French text below)*
 Here are some useful scripts for Beckhoff's TC/BSD and TC/LUR operating systems to help install and configure TwinCAT functions.
 The scripts are designed with French customers in mind. Feel free to fork this to tailor to your use.
@@ -30,6 +30,9 @@ It is assumed for each script to be executed in `/home/Administrator` :
 - [x] TF6250 Modbus/TCP Installation and configuration script
 - [x] eGalax Touchscreen support script
 - [ ] ... Possibly more to come (including offline versions)
+
+###
+- [x] Windows-side Powershell script to connect via SSH using MAC Address
 
 ### TwinCAT/LUR
 - [x] Beckhoff IPC configuration script (with apt authentication and TwinCAT XAR installation)
@@ -84,6 +87,9 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
 - [x] Script d'installation et de configuration pour TF6250 Modbus/TCP
 - [x] Script d'activation du support pour écran tactile eGalax
 - [ ] ... Potentiellement davantage à venir (y compris des versions hors-ligne)
+
+###
+- [x] Script Powershell (Windows) pour se connecter à Linux en SSH avec l'adresse MAC du PC
 
 ### TwinCAT/LUR
 - [x] Script de configuration de l'IPC Beckhoff (authentification pour apt, installation de TwinCAT XAR, clavier en français, heure de Paris)
