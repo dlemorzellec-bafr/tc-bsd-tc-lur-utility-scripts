@@ -88,7 +88,6 @@ if [[ -n "$MISSING_CMDS" ]]; then
 	fdisk
 	ntfs-3g
 	zstd
-	original-awk
 	lshw
 	)
 	for PACKAGE in "${PACKAGES[@]}"; do
@@ -111,7 +110,18 @@ fi
 # Look for a mounted USB device
 echo ""
 echo -e "${GREEN}Recherche d'un support USB monte ...${NC}"
-USB_MOUNT="$(lsblk -rpo NAME,MOUNTPOINT,TRAN | awk '$3=="usb" && $2!="" {print $2; exit}')"
+USB_MOUNT=""
+while IFS= read -r line; do
+    # line format: /dev/sdb1 /media/usb0 1
+    dev=$(echo "$line" | cut -d' ' -f1)
+    mountpoint=$(echo "$line" | cut -d' ' -f2)
+    rmflag=$(echo "$line" | cut -d' ' -f3)
+
+    if [[ "$rmflag" == "1" && -n "$mountpoint" ]]; then
+        USB_MOUNT="$mountpoint"
+        break
+    fi
+done < <(lsblk -rpo NAME,MOUNTPOINT,RM)
 
 if [[ -z "${USB_MOUNT}" ]]; then
     echo -e "${RED}Erreur : pas de support USB monte detecte.${NC}"
@@ -129,7 +139,7 @@ fi
 # Verify available space and writability on the USB device
 echo ""
 echo -e "${GREEN}Verification de l'espace disponible sur le support USB ...${NC}"
-FREE_SPACE_GIO="$(df -BG "${USB_MOUNT}" | awk 'NR==2 {gsub("G","",$4); print $4}')"
+FREE_SPACE_GIO=$(df -BG --output=avail "$USB_MOUNT" | tail -n 1 | tr -d 'G ')
 
 echo -e "${CYAN}Espace libre : ${MAGENTA}${FREE_SPACE_GIO} Gio.${NC}"
 
