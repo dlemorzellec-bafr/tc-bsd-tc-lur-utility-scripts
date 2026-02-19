@@ -24,7 +24,8 @@ CYAN='\033[1;36m'
 NC='\033[0m' # No colour (reset)
 
 # Constants
-readonly script_date="2025-11-12"
+readonly script_date="2026-02-19"
+readonly script_path="$(cd "$(dirname "${0}")" && pwd)"
 
 readonly twincat_folder="/etc/TwinCAT"
 readonly twincat_functions="${twincat_folder}/Functions"
@@ -95,6 +96,27 @@ echo ""
 echo -e "${YELLOW} --- BAFR - Script de configuration de TC/LUR - ${script_date} --- ${NC}"
 echo ""
 
+# Check architecture and warn if not Beckhoff PC
+SYS_VENDOR=$(cat /sys/class/dmi/id/sys_vendor 2>/dev/null)
+CHASSIS_VENDOR=$(cat /sys/class/dmi/id/chassis_vendor 2>/dev/null)
+PRODUCT_NAME=$(cat /sys/class/dmi/id/product_name 2>/dev/null)
+ARCH=$(uname -m)
+
+if [[ "$SYS_VENDOR" != "Beckhoff Automation GmbH & Co. KG" && "$CHASSIS_VENDOR" != "Beckhoff Automation GmbH & Co. KG" ]]; then
+	echo -e "${YELLOW}W: Le PC n'est probablement pas un PC Beckhoff.${NC}"
+	echo -e "${YELLOW}   Le fonctionnement correct de TwinCAT et autres logiciels Beckhoff n'est pas garanti.${NC}"
+	echo -e "${CYAN}Modele de PC detecte : ${YELLOW}${PRODUCT_NAME}${NC}"
+else
+	echo -e "${CYAN}Modele de PC detecte : ${GREEN}${PRODUCT_NAME}${NC}"
+fi
+
+if [[ "$ARCH" != "x86_64" && "$ARCH" != "aarch64" ]]; then
+    echo -e "${RED}Erreur : architecture non supportee : $ARCH${NC}"
+    exit 1
+fi
+echo -e "${CYAN}Architecture : ${GREEN}${ARCH}${NC}"
+echo ""
+
 # Create APT auth config
 echo ""
 echo -e "${GREEN}Creation du fichier d'authentification pour APT ...${NC}"
@@ -118,7 +140,7 @@ echo -e "${GREEN}Ajustement des depots Beckhoff ...${NC}"
 mkdir -p "$(dirname "$beckhoff_source_list")"
 rm -f "${beckhoff_source_list}"
 touch "${beckhoff_source_list}"
-cat >> "${beckhoff_source_list}" << EOF
+cat > "${beckhoff_source_list}" << EOF
 deb [signed-by=${beckhoff_keyring_file}] ${beckhoff_repo_url} ${dist_codename} main
 
 EOF
@@ -201,6 +223,7 @@ update-initramfs -u
 # Install needed packages (to edit as needed)
 echo ""
 echo -e "${GREEN}Installation de paquets supplementaires ...${NC}"
+FAILED_PACKAGES=()
 PACKAGES=(
 gnupg
 dialog
@@ -209,13 +232,34 @@ apt-rdepends
 dpkg-dev
 git
 lshw
+fdisk
+ntfs-3g
+bhfinfo
 tc31-xar-um
 )
+
+if [ "$ARCH" = "x86_64" ]; then
+	PACKAGES+=(
+	libtcrte
+	)
+elif [ "$ARCH" = "aarch64" ]; then
+	# nothing here yet
+	:
+fi
+
 for PACKAGE in "${PACKAGES[@]}"; do
 	echo ""
 	echo -e "${GREEN}Installation de $PACKAGE ...${NC}"
-	apt-get install -y --no-install-recommends "$PACKAGE"
+	apt-get install -y --no-install-recommends "$PACKAGE" || {
+		echo -e "${YELLOW}W: l'installation du paquet $PACKAGE a echoue.${NC}"
+		FAILED_PACKAGES+=("$PACKAGE")
+	}
 done
+
+# Warn if packages are not installed
+if [ ${#FAILED_PACKAGES[@]} -ne 0 ]; then
+    echo -e "${YELLOW}W: les paquets suivants n'ont pas pu etre installes : ${RED}${FAILED_PACKAGES[*]}${NC}"
+fi
 
 # Clear APT cache to save space
 echo ""
