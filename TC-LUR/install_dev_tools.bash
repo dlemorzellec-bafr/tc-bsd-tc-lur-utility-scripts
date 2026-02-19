@@ -60,7 +60,7 @@ if ! ping -c 1 -W 2 deb.beckhoff.com >/dev/null; then
 fi
 
 # Check if running stable version of repository and warn if not
-REPO_URL="https://deb.beckhoff.com/debian"; line=$(grep "^deb " /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null | grep "$REPO_URL" | head -n1 | tr -s ' '); set -- $line; if [[ "$2" == \[* ]]; then CODENAME="$4"; else CODENAME="$3"; fi; echo "$CODENAME"
+REPO_URL="https://deb.beckhoff.com/debian"; line=$(grep "^deb " /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null | grep "$REPO_URL" | head -n1 | tr -s ' '); set -- $line; if [[ "$2" == \[* ]]; then CODENAME="$4"; else CODENAME="$3"; fi
 if [[ "${CODENAME}" != "${dist_codename}" ]]; then
 	echo -e "${YELLOW}W: Ce systeme n'utilise pas la derniere version stable des paquets. Comportement imprevisible.${NC}"
 fi
@@ -77,14 +77,6 @@ meson
 ninja-build
 bhfinfo
 )
-
-if [ "$ARCH" = "x86_64" ]; then
-	# nothing here yet
-	:
-elif [ "$ARCH" = "aarch64" ]; then
-	# nothing here yet
-	:
-fi
 
 for PACKAGE in "${PACKAGES[@]}"; do
 	echo ""
