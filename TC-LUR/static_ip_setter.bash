@@ -95,6 +95,7 @@ Name=${NETWORK_IF}
 [Network]
 Address=${IP_ADDRESS}$(subnet_to_cidr ${SUBNET_MASK})
 Gateway=${GATEWAY}
+RouteMetric=500
 
 EOF
 }
