@@ -78,9 +78,9 @@ echo ""
 echo -e "${GREEN}Vidage du cache d'APT ...${NC}"
 apt-get clean
 
-# Add firewall rule for TF2000 and reload firewall
+# Add firewall rule for TF6100 and reload firewall
 echo ""
-echo -e "${GREEN}Ajout d'une exception du pare-feu pour TF2000 ...${NC}"
+echo -e "${GREEN}Ajout d'une exception du pare-feu pour TF6100 ...${NC}"
 touch ${firewall_rulepath}
 cat >> "${firewall_rulepath}" << EOF
 table inet filter {
