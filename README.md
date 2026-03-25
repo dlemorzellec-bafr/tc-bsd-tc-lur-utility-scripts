@@ -16,15 +16,12 @@ It is assumed for each script to be executed in `/home/Administrator` :
     sudo chmod +x <name of script>.bash
     sudo ~/<name of script>.bash
     
-**For SSH connection script :**
+**For Windows-side PowerShell scripts :**
 	
 	Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-	<script path>/ssh_using_mac.ps1
+	<script path>/<name of script>.ps1
 
 ## Roadmap
-
-###
-- [x] Windows-side Powershell script to connect via SSH using MAC Address
 
 ### TwinCAT/BSD
 - [x] TF1200 and Sway Installation and configuration script
@@ -60,6 +57,9 @@ It is assumed for each script to be executed in `/home/Administrator` :
 - [ ] Docker installation script with TwinCAT XAR container deployment 
 - [ ] ... Possibly more to come (including offline versions)
 
+- [x] Windows-side Powershell script to connect via SSH using the remote MAC Address
+- [x] Windows-side Powershell script to retrive the TwinCAT license files
+
 These are not official Beckhoff material.
 
 ---
@@ -85,9 +85,6 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
 	<script path>/ssh_using_mac.ps1
 
 ## Feuille de route
-
-###
-- [x] Script Powershell (Windows) pour se connecter à Linux en SSH avec l'adresse MAC du PC
 
 ### TwinCAT/BSD
 - [x] Script d'installation et de configuration pour TF1200 et Sway
@@ -122,6 +119,9 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
 - [x] Script d'installation des outils de développement
 - [ ] Script pour l'installation de Docker et le déploiement d'un conteneur TwinCAT XAR 
 - [ ] ... Potentiellement davantage à venir (y compris des versions hors-ligne)
+
+- [x] Script Powershell (Windows) pour se connecter en SSH avec l'adresse MAC du PC distant
+- [x] Script Powershell (Windows) pour récupérer les fichiers de licence TwinCAT
 
 Il ne s'agit pas de scripts ou documents officiels de Beckhoff.
 
