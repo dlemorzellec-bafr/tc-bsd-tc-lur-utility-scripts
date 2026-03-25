@@ -57,6 +57,7 @@ It is assumed for each script to be executed in `/home/Administrator` :
 - [ ] Docker installation script with TwinCAT XAR container deployment 
 - [ ] ... Possibly more to come (including offline versions)
 
+#### Powershell scripts
 - [x] Windows-side Powershell script to connect via SSH using the remote MAC Address
 - [x] Windows-side Powershell script to retrive the TwinCAT license files
 
@@ -120,6 +121,7 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
 - [ ] Script pour l'installation de Docker et le déploiement d'un conteneur TwinCAT XAR 
 - [ ] ... Potentiellement davantage à venir (y compris des versions hors-ligne)
 
+#### Scripts Powershell
 - [x] Script Powershell (Windows) pour se connecter en SSH avec l'adresse MAC du PC distant
 - [x] Script Powershell (Windows) pour récupérer les fichiers de licence TwinCAT
 
