@@ -80,7 +80,7 @@ Il est supposé que chaque script est exécuté dans le dossier `/home/Administr
     sudo chmod +x <nom du script>.bash
     sudo ~/<nom du script>.bash
 
-**Pour le script de connexion SSH :**
+**Pour les scripts Powershell (Windows) :**
 	
 	Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 	<script path>/ssh_using_mac.ps1
