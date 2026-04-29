@@ -3,7 +3,7 @@
 # Dylan Erwan Le Morzellec (BECKHOFF Automation France SARL)
 # The script is provided AS IS and its behaviour is not warranted
 
-# Script to set the AMS NetId
+# Script to set (or get) the AMS NetId
 
 set -eu -o pipefail
 
@@ -33,12 +33,10 @@ usage() {
 	echo ""
 	echo -e "${CYAN}Ce script permet de changer l'adresse AMS NetId.${NC}"
 	echo ""
+	echo -e "${CYAN}On peut sinon lire l'adresse AMS NetId en remplacant l'adresse par l'option ${MAGENTA}--get${CYAN} .${NC}"
+	echo ""
 	exit 1
 }
-if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
-	usage
-	exit 1
-fi
 
 # Ensure script is run as root
 if [[ "$EUID" -ne 0 ]]; then
@@ -48,12 +46,19 @@ if [[ "$EUID" -ne 0 ]]; then
 	exit 1
 fi
 
-# Collect credentials
-if [ "$#" -eq 1 ]; then
+# Handle options and arguments
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+	usage
+	exit 1
+elif [[ "${1:-}" == "--get" || "${1:-}" == "-g" ]]; then
+	MODE="get"
+elif [ "$#" -eq 1 ]; then
 	AMSNETID="$1"
+	MODE="set"
 elif [ "$#" -eq 0 ]; then
 	read -rp "Entrez l'adresse AMS NetId : " AMSNETID
 	echo
+	MODE="set"
 else
 	echo -e "${RED}Nombre d'arguments invalide.${NC}"
 	echo ""
@@ -61,16 +66,11 @@ else
 	exit 1
 fi
 
-# Check if AMS NetId format is valid
-if ! [[ "$AMSNETID" =~ ^([0-9]{1,3}\.){5}[0-9]{1,3}$ ]]; then
-    echo -e "${RED}L'adresse AMS NetId n'est pas valide. Format attendu : X.X.X.X.X.X${NC}"
-    exit 1
-fi
-
 # Constants
 readonly twincat_registry="/etc/TwinCAT/3.1/TcRegistry.xml"
+readonly script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Hexadecimal conversion function
+# To Hexadecimal conversion function
 ams_to_hexa() {
     HEX_VALUE=""
 	
@@ -82,11 +82,57 @@ ams_to_hexa() {
 	echo "$HEX_VALUE"
 }
 
-# Force TwinCAT to switch to CONFIG mode (normally not necessary)
-#TcSystemServiceUm -c /var/run/TcSystemServiceUm.pid
+# From Hexadecimal conversion function
+hexa_to_ams() {
+	local HEX="$1"
+	local AMS=""
 
-# Replace hexadecimal value of the AMS NetId in the TwinCAT registry
-sed -i "/<Value Name=\"AmsNetId\"/s|>[^<]*<|>$(ams_to_hexa "$AMSNETID")<|" ${twincat_registry}
+	for ((i=0; i<${#HEX}; i+=2)); do
+		BYTE_HEX="${HEX:$i:2}"
+		BYTE_DEC=$((16#$BYTE_HEX))
+		AMS+="${BYTE_DEC}."
+	done
 
-# Reload TwinCAT service
-systemctl restart TcSystemServiceUm
+	echo "${AMS%.}"  # remove trailing dot
+}
+
+get_amsnetid_from_registry() {
+	sed -n 's/.*<Value Name="AmsNetId" Type="BIN">\([0-9A-Fa-f]\{12\}\)<\/Value>.*/\1/p' "${twincat_registry}"
+}
+
+# SET MODE
+if [[ "$MODE" == "set" ]]; then
+	# Check if AMS NetId format is valid
+	if ! [[ "$AMSNETID" =~ ^([0-9]{1,3}\.){5}[0-9]{1,3}$ ]]; then
+		echo -e "${RED}L'adresse AMS NetId n'est pas valide. Format attendu : X.X.X.X.X.X${NC}"
+		exit 1
+	fi
+	
+	# Force TwinCAT to switch to CONFIG mode (normally not necessary)
+	#TcSystemServiceUm -c /var/run/TcSystemServiceUm.pid
+	
+	# Replace hexadecimal value of the AMS NetId in the TwinCAT registry
+	sed -i "/<Value Name=\"AmsNetId\"/s|>[^<]*<|>$(ams_to_hexa "$AMSNETID")<|" "${twincat_registry}"
+	
+	# Reload TwinCAT service
+	systemctl restart TcSystemServiceUm
+
+# GET MODE
+elif [[ "$MODE" == "get" ]]; then
+	# Get raw hexadecimal value from the TwinCAT registry
+	HEX_VALUE="$(get_amsnetid_from_registry)"
+
+	# Handle reading error
+	if [[ -z "$HEX_VALUE" ]]; then
+		echo -e "${RED}Impossible de lire l'AmsNetId dans le registre.${NC}"
+		exit 1
+	fi
+
+	# Convert hexadecimal value to human-readable
+	AMS_VALUE="$(hexa_to_ams "$HEX_VALUE")"
+	echo -e "${GREEN}Adresse AMS NetId actuelle : ${CYAN}${AMS_VALUE}${NC}"
+	
+	# Export read AMS NetId into a text file adjacent to script
+	output_file="${script_path}/amsnetid_get.txt"
+	echo "${AMS_VALUE}" > "${output_file}"
+fi
