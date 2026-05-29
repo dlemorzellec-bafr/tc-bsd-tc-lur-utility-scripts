@@ -68,6 +68,8 @@ done
 # Constants
 readonly nftables_modbus_conf="/etc/nftables.conf.d/60-modbus.conf"
 readonly modbus_server_conf="/etc/TwinCAT/Functions/TF6250-Modbus-TCP/TcModbusSrv.xml"
+readonly modbus_server_conf_dir="/etc/TwinCAT/Functions/TF6250-Modbus-TCP/Server"
+readonly modbus_server_conf_server="${modbus_server_conf_dir}/TcModbusSrv.xml"
 
 # Firewall rule edit function
 nftables_rule_edit() {
@@ -101,8 +103,10 @@ systemctl reload nftables
 
 # Modbus TCP sever configuration edit function
 modbus_server_conf_edit() {
-	touch "${modbus_server_conf}"
-	cat >> "${modbus_server_conf}" << EOF
+	#touch "${modbus_server_conf}"
+	mkdir -p ${modbus_server_conf_dir}
+	touch "${modbus_server_conf_server}"
+	cat >> "${modbus_server_conf_server}" << EOF
 <?xml version="1.0"?>
 <Configuration>
   <Port>502</Port>
@@ -157,10 +161,11 @@ EOF
 echo ""
 echo -e "${GREEN}Creation de la configuration du serveur Modbus TCP ...${NC}"
 echo ""
-if [ -e "${modbus_server_conf}" ]; then
+if [ -e "${modbus_server_conf_server}" ]; then
 	echo -e "${YELLOW}W: Le fichier de configuration du serveur Modbus TCP existe deja.${NC}"
 	echo ""
 	rm -f "${modbus_server_conf}"
+	rm -f "${modbus_server_conf_server}"
 	echo -e "${RED}Le fichier a ete remplace${NC}"
 	echo ""
 	modbus_server_conf_edit
