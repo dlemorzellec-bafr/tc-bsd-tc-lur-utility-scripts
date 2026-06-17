@@ -33,7 +33,8 @@ readonly tf1200_path="${twincat_functions}/TF1200-UI-Client"
 readonly tf1200_srcpath="${tf1200_path}/scripts"
 readonly tf2000_path="${twincat_functions}/TF2000-HMI-Server"
 
-readonly firewall_rulepath="/etc/nftables.conf.d/70-twincat-hmi.conf"
+readonly firewall_hmi_rulepath="/etc/nftables.conf.d/70-twincat-hmi.conf"
+readonly firewall_vnc_rulepath="/etc/nftables.conf.d/60-wayvnc.conf"
 
 readonly graph_user="tf1200-user"
 readonly graph_user_path="/home/${graph_user}"
@@ -98,6 +99,7 @@ foot
 bemenu
 grim
 grimshot
+wayvnc
 )
 for PACKAGE in "${PACKAGES[@]}"; do
 	echo ""
@@ -113,8 +115,8 @@ apt-get clean
 # Add firewall rule for TF2000 and reload firewall
 echo ""
 echo -e "${GREEN}Ajout d'une exception du pare-feu pour TF2000 ...${NC}"
-touch ${firewall_rulepath}
-cat >> "${firewall_rulepath}" << EOF
+touch ${firewall_hmi_rulepath}
+cat > "${firewall_hmi_rulepath}" << EOF
 table inet filter {
   chain input {
     # accept TwinCAT HMI server
@@ -126,13 +128,30 @@ table inet filter {
 EOF
 systemctl reload nftables
 
+# Add firewall rule for the VNC server and reload firewall
+echo ""
+echo -e "${GREEN}Ajout d'une exception du pare-feu pour wayvnc ...${NC}"
+touch ${firewall_vnc_rulepath}
+cat > "${firewall_vnc_rulepath}" << EOF
+table inet filter {
+  chain input {
+    # accept VNC server
+	tcp dport 5900 accept
+  }
+}
+
+EOF
+systemctl reload nftables
+
 # Initialise TwinCAT HMI server
 echo ""
 echo -e "${GREEN}Initialisation du serveur TwinCAT HMI ...${NC}"
-TcHmiSrv --initialize --password="${HMI_PASSWORD}"
-
+HMI_INIT=$(TcHmiSrv --initialize --password=${HMI_PASSWORD} 2>&1)
+if echo "$HMI_INIT" | grep -q 'HMI_E_SERVER_ALREADY_RUNNING'; then
+        rm -rf "/var/lib/tchmisrv/service/TcHmiProject"
+        TcHmiSrv --initialize --password=${HMI_PASSWORD}
+fi
 systemctl enable --now TcHmiSrv.service
-systemctl start TcHmiSrv.service
 
 # Initialise seatd
 echo ""
@@ -150,6 +169,7 @@ systemctl start dbus.service
 echo ""
 echo -e "${GREEN}Creation de l'utilisateur graphique ${graph_user} ...${NC}"
 useradd -c "User for TwinCAT UI Client" -m -s "$(command -v bash)" "${graph_user}"
+echo "${graph_user}:${HMI_PASSWORD}" | chpasswd
 sed -i "s/^${graph_user}:\!:/${graph_user}::/g" /etc/shadow
 usermod -aG video "${graph_user}"
 
@@ -500,7 +520,7 @@ chown -R ${graph_user} ${sway_userconfig}/config
 # Creation of the TF1200 configuration file
 echo ""
 echo -e "${GREEN}Creation de la configuration de TF1200-UI-Client ...${NC}"
-touch ${tf1200_userconfig}/config
+touch ${tf1200_userconfig}/config.json
 cat > "${tf1200_userconfig}/config.json" << EOF
 {
     "allowMove": true,

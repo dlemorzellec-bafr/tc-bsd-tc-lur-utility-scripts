@@ -33,7 +33,8 @@ readonly tf1200_path="${twincat_functions}/TF1200-UI-Client"
 readonly tf1200_srcpath="${tf1200_path}/scripts"
 readonly tf1810_path="${twincat_functions}/TF1810-PLC-HMI-Web"
 
-readonly firewall_rulepath="/etc/nftables.conf.d/70-plchmiweb.conf"
+readonly firewall_plchmi_rulepath="/etc/nftables.conf.d/70-plchmiweb.conf"
+readonly firewall_vnc_rulepath="/etc/nftables.conf.d/60-wayvnc.conf"
 
 readonly graph_user="tf1200-user"
 readonly graph_user_path="/home/${graph_user}"
@@ -98,6 +99,7 @@ foot
 bemenu
 grim
 grimshot
+wayvnc
 )
 for PACKAGE in "${PACKAGES[@]}"; do
 	echo ""
@@ -113,12 +115,27 @@ apt-get clean
 # Add firewall rule for TF1810 and reload firewall
 echo ""
 echo -e "${GREEN}Ajout d'une exception du pare-feu pour TF1810 ...${NC}"
-touch ${firewall_rulepath}
-cat >> "${firewall_rulepath}" << EOF
+touch ${firewall_plchmi_rulepath}
+cat > "${firewall_plchmi_rulepath}" << EOF
 table inet filter {
   chain input {
     # accept PLC HMI Web server
 	tcp dport 42341 accept
+  }
+}
+
+EOF
+systemctl reload nftables
+
+# Add firewall rule for the VNC server and reload firewall
+echo ""
+echo -e "${GREEN}Ajout d'une exception du pare-feu pour wayvnc ...${NC}"
+touch ${firewall_vnc_rulepath}
+cat > "${firewall_vnc_rulepath}" << EOF
+table inet filter {
+  chain input {
+    # accept VNC server
+	tcp dport 5900 accept
   }
 }
 
@@ -134,18 +151,17 @@ systemctl start TcSystemServiceUm.service
 echo ""
 echo -e "${GREEN}Initialisation de seatd ...${NC}"
 systemctl enable --now seatd.service
-systemctl start seatd.service
 
 # Initialise dbus
 echo ""
 echo -e "${GREEN}Initialisation de dbus ...${NC}"
 systemctl enable --now dbus.service
-systemctl start dbus.service
 
 # Creation of the graphical user
 echo ""
 echo -e "${GREEN}Creation de l'utilisateur graphique ${graph_user} ...${NC}"
 useradd -c "User for TwinCAT UI Client" -m -s "$(command -v bash)" "${graph_user}"
+echo "${graph_user}:${HMI_PASSWORD}" | chpasswd
 sed -i "s/^${graph_user}:\!:/${graph_user}::/g" /etc/shadow
 usermod -aG video "${graph_user}"
 
@@ -176,7 +192,7 @@ chown -R ${graph_user} ${tf1200_userconfig}
 echo ""
 echo -e "${GREEN}Creation de la configuration de Sway ...${NC}"
 touch ${sway_userconfig}/config
-cat >> "${sway_userconfig}/config" << EOF
+cat > "${sway_userconfig}/config" << EOF
 # Configuration de Sway (BAFR, DELM, 2025-05-06)
 
 ### EDIT BAFR : Support for XWayland
@@ -496,8 +512,8 @@ chown -R ${graph_user} ${sway_userconfig}/config
 # Creation of the TF1200 configuration file
 echo ""
 echo -e "${GREEN}Creation de la configuration de TF1200-UI-Client ...${NC}"
-touch ${tf1200_userconfig}/config
-cat >> "${tf1200_userconfig}/config.json" << EOF
+touch ${tf1200_userconfig}/config.json
+cat > "${tf1200_userconfig}/config.json" << EOF
 {
     "allowMove": true,
     "allowResize": true,

@@ -4,6 +4,7 @@
 # The script is provided AS IS and its behaviour is not warranted
 
 # Script to set up a Modbus TCP Server with firewall relevent rule and custom server configuration
+# Tested on TF6250 2.0.26-1
 
 set -eu -o pipefail
 
@@ -110,7 +111,7 @@ modbus_server_conf_edit() {
 <?xml version="1.0"?>
 <Configuration>
   <Port>502</Port>
-  <IpAddr>127.0.0.1</IpAddr>
+  <IpAddr></IpAddr>
     <Mapping>
     <InputRegisters>
       <MappingInfo>
