@@ -592,7 +592,9 @@ touch ${wayvnc_userconfig}/config
 cat > "${wayvnc_userconfig}/config" << EOF
 address=0.0.0.0
 port=5900
-enable_auth=false
+enable_auth=true
+username=${graph_user}
+password=${HMI_PASSWORD}
 
 EOF
 chown -R ${graph_user} ${wayvnc_userconfig}/config
