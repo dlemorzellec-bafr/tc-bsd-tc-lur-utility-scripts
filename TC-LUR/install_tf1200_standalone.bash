@@ -98,6 +98,7 @@ bemenu
 grim
 grimshot
 wayvnc
+wev
 )
 for PACKAGE in "${PACKAGES[@]}"; do
 	echo ""
@@ -468,6 +469,90 @@ bindsym \$mod+r mode "resize"
 	bindsym --locked XF86MonBrightnessUp exec brightnessctl set 5%+
 	# Special key to take a screenshot with grim
 	bindsym Print exec grim
+#
+# Additional key bindings compatible with UltraVNC Viewer using Alt key (BAFR 2026-06-18)
+#
+	# Start a terminal
+	bindsym Mod1+Return exec \$term
+
+	# Kill focused window
+	bindsym Mod1+Shift+q Kill
+
+	# Start your launcher
+	bindsym Mod1+d exec \$menu
+
+	# (Re-)Start TF1200-UI-Client Electron browser
+	bindsym Mod1+k exec /etc/TwinCAT/Functions/TF1200-UI-Client/TF1200-UI-Client
+
+	# Reload the configuration file
+	bindsym Mod1+Shift+c reload
+
+	# Moving your focus around
+	bindsym Mod1+Left focus left
+	bindsym Mod1+Down focus down
+	bindsym Mod1+Up focus up
+	bindsym Mod1+Right focus right
+
+	# Move the focused window around
+	bindsym Mod1+Shift+Left move left
+	bindsym Mod1+Shift+Down move down
+	bindsym Mod1+Shift+Up move up
+	bindsym Mod1+Shift+Right move right
+
+	# Switch to workspace
+	bindsym Mod1+1 workspace number 1
+	bindsym Mod1+2 workspace number 2
+	bindsym Mod1+3 workspace number 3
+	bindsym Mod1+4 workspace number 4
+	bindsym Mod1+5 workspace number 5
+	bindsym Mod1+6 workspace number 6
+	bindsym Mod1+7 workspace number 7
+	bindsym Mod1+8 workspace number 8
+	bindsym Mod1+9 workspace number 9
+	bindsym Mod1+0 workspace number 10
+
+	# Move focused container to workspace
+	bindsym Mod1+Shift+1 move container to workspace number 1
+	bindsym Mod1+Shift+2 move container to workspace number 2
+	bindsym Mod1+Shift+3 move container to workspace number 3
+	bindsym Mod1+Shift+4 move container to workspace number 4
+	bindsym Mod1+Shift+5 move container to workspace number 5
+	bindsym Mod1+Shift+6 move container to workspace number 6
+	bindsym Mod1+Shift+7 move container to workspace number 7
+	bindsym Mod1+Shift+8 move container to workspace number 8
+	bindsym Mod1+Shift+9 move container to workspace number 9
+	bindsym Mod1+Shift+0 move container to workspace number 10
+
+	# Split the current object of your focus, horizontally or vertically
+	bindsym Mod1+b splith
+	bindsym Mod1+v splitv
+
+	# Switch the current container between different layout styles
+	bindsym Mod1+s layout stacking
+	bindsym Mod1+w layout tabbed
+	bindsym Mod1+e layout toggle split
+
+	# Make the current focus fullscreen
+	bindsym Mod1+f fullscreen
+
+	# Toggle the current focus between tiling and floating mode
+	bindsym Mod1+Shift+space floating Toggle
+
+	# Swap focus between the tiling area and the floating area
+	bindsym Mod1+space mode_toggle
+
+	# Move focus to the parent container
+	bindsym Mod1+a focus parent
+
+	# Move the currently focused window to the scratchpad
+	bindsym Mod1+Shift+minus move scratchpad
+
+	# Show the next scratchpad window of hide the focused scratchpad window
+	# If there are multiple scratchpad windows, this command cycles through them
+	bindsym Mod1+minus scratchpad show
+
+	# Resize containers mode
+	bindsym Mod1+r mode "resize"
 
 #
 # Status Bar:
