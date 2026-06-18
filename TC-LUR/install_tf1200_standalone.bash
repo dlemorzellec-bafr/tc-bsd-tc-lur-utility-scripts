@@ -24,7 +24,6 @@ CYAN='\033[1;36m'
 NC='\033[0m' # No colour (reset)
 
 # Constants
-readonly script_date="2025-11-06"
 readonly script_path="$(cd "$(dirname "${0}")" && pwd)"
 
 readonly twincat_folder="/etc/TwinCAT"
@@ -41,6 +40,7 @@ readonly graph_user_profile_path="${graph_user_path}/.profile"
 readonly sway_userconfig="${graph_user_path}/.config/sway"
 readonly tf1200_userconfig="${graph_user_path}/.config/TF1200-UI-Client"
 readonly wayvnc_userconfig="${graph_user_path}/.config/wayvnc"
+readonly wayvnc_service="/etc/systemd/system/wayvnc.service"
 
 # Usage display function
 usage() {
@@ -312,6 +312,8 @@ input * xkb_layout "fr"
 # Execute the TwinCAT UI Client with the specified arguments. #	EDIT BAFR Force debug logging
 #exec "$(cd "$(dirname "${script_path}")" && pwd)/TF1200-UI-Client" \$@
 exec "${tf1200_path}/TF1200-UI-Client" --user=${graph_user} > ${tf1200_userconfig}/tf1200-out.log 2> ${tf1200_userconfig}/tf1200-err.log
+# Start the WayVNC Server service
+exec systemctl start wayvnc.Service
 
 ### Key bindings
 #
@@ -571,6 +573,34 @@ enable_auth=false
 
 EOF
 chown -R ${graph_user} ${wayvnc_userconfig}/config
+
+# Creation of the VNC server service file
+echo ""
+echo -e "${GREEN}Creation du service VNC ...${NC}"
+touch ${wayvnc_service}
+cat > "${wayvnc_service}" << EOF
+[Unit]
+Description=WayVNC Server
+After=network.target seatd.service dbus.service systemd-logind.service
+Wants=seatd.service dbus.service
+
+[Service]
+Type=simple
+User=${graph_user}
+Group=${graph_user}
+Environment=XDG_RUNTIME_DIR=/run/user/$(id -u ${graph_user})
+Environment=WAYLAND_DISPLAY=wayland-1
+ExecStartPre=/bin/sh -c 'while [ ! -S /run/user/$(id -u ${graph_user})/wayland-1 ]; do sleep 1; done'
+ExecStart=/usr/bin/wayvnc -C ${wayvnc_userconfig}/config
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+EOF
+systemctl daemon-reload
+systemctl enable wayvnc.service
 
 # Configuration of Sway Autostart and debug logging
 echo ""
