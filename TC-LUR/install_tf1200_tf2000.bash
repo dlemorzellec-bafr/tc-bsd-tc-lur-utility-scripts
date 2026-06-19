@@ -148,10 +148,10 @@ systemctl reload nftables
 # Initialise TwinCAT HMI server
 echo ""
 echo -e "${GREEN}Initialisation du serveur TwinCAT HMI ...${NC}"
-HMI_INIT=$(TcHmiSrv --initialize --password=${HMI_PASSWORD} 2>&1)
-if echo "$HMI_INIT" | grep -q 'HMI_E_SERVER_ALREADY_RUNNING'; then
-        rm -rf "/var/lib/tchmisrv/service/TcHmiProject"
-        TcHmiSrv --initialize --password=${HMI_PASSWORD}
+HMI_INIT=$(/usr/bin/TcHmiSrv --initialize --password=${HMI_PASSWORD} 2>&1)
+if echo "$HMI_INIT" | grep -q 'HMI_E_SERVER_ALREADY_RUNNING'; then
+	rm -rf "/var/lib/tchmisrv/service/TcHmiProject"
+	TcHmiSrv --initialize --password=${HMI_PASSWORD}
 fi
 systemctl enable --now TcHmiSrv.service
 
